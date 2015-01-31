@@ -12,6 +12,7 @@ namespace Spyder
 	{
 		m_subsystems.resize(m_subsystems.size() +1);
 		m_subsystems[m_subsystems.size()-1] = ptr;
+		m_nameToSubsys[strName] = ptr;
 	}
 
 	std::vector<Subsystem*>& SubsystemMgr::GetSubsystems()

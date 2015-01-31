@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace Spyder
 {
@@ -18,6 +19,7 @@ namespace Spyder
 		friend class Subsystem;
 		void RegisterSubsystem(const std::string &strName, Subsystem* ptr);
 		std::vector<Subsystem*> m_subsystems;
+		std::unordered_map<std::string, Subsystem*> m_nameToSubsys;
 	};
 
 	class Subsystem
@@ -32,6 +34,14 @@ namespace Spyder
 		virtual void Init(RunModes runmode) = 0;
 		virtual void Periodic(RunModes runmode) = 0;
 		virtual void RobotInit() = 0;
+		inline unsigned short GetPeriod()
+		{
+			return m_usPeriod;
+		}
+		inline void SetPeriod(unsigned short usPeriod)
+		{
+			m_usPeriod = usPeriod;
+		}
 	private:
 		std::string m_strName;
 		unsigned short m_usPeriod;
