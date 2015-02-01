@@ -20,8 +20,7 @@ namespace Spyder
 	private:
 		T m_val;
 	public:
-		ConfigVar(const std::string &strName, T default_val) : ConfigVarBase(strName),
-		m_val(default_val)
+		ConfigVar(const std::string &strName, T default_val) : ConfigVarBase(strName), m_val(default_val)
 		{
 		}
 		inline T GetVal()

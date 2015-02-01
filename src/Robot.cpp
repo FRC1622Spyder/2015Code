@@ -12,11 +12,9 @@ public:
 	void RobotInit()
 	{
 		lw = LiveWindow::GetInstance();
-		//MotorSafetyHelper *m_Safety;
-		//m_Safety->SetSafetyEnabled(false);
 
 		std::fstream file;
-		file.open("config.cfg", std::ios_base::in);
+		file.open("/etc/SpyderConfig.cfg", std::ios_base::in);
 		if(file.is_open())
 		{
 			Spyder::ConfigVarBase::ReadConfigFile(file);
