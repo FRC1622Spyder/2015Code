@@ -88,4 +88,14 @@ public:
 	}
 };
 
-START_ROBOT_CLASS(Robot);
+int main()
+	{
+		int halRes = HALInitialize();
+		if (!halRes){
+			std::cerr<<"FATAL ERROR: HAL could not be initialized"<<std::endl;return -1;
+		}
+		HALReport(HALUsageReporting::kResourceType_Language, HALUsageReporting::kLanguage_CPlusPlus);
+		Robot *robot = new Robot();
+		RobotBase::robotSetup(robot);
+		return 0;
+	}
