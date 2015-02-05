@@ -21,6 +21,7 @@ private:
 	float twist;
 	float curveT;
 	float rampVal;
+	float lastOutputY;
 
 public:
 	Drive() : Spyder::Subsystem("Drive")
@@ -43,6 +44,14 @@ public:
 		m_robotDrive->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);	// invert the left side motors
 		m_robotDrive->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
 
+		//lastOutputY = 0.0f;
+		driveX = 0.0f;
+		curveX = 0.0f;
+		driveY = 0.0f;
+		curveY = 0.0f;
+		twist = 0.0f;
+		curveT = 0.0f;
+
 		m_robotDrive->SetSafetyEnabled(false);
 		switch(runmode)
 		{
@@ -59,13 +68,8 @@ public:
 	{
 		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 1);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
-		driveX = 0.0f;
-		curveX = 0.0f;
-		driveY = 0.0f;
-		curveY = 0.0f;
-		twist = 0.0f;
-		curveT = 0.0f;
-		rampVal = 0.01;
+		lastOutputY = 0.0f;
+
 		//float rampY = 0.0f;
 		//double xAccel = accel->GetX();
 		//double yAccel = accel->GetY();
@@ -81,6 +85,7 @@ public:
 
 		case Spyder::M_TELEOP:
 			//rampY = leftTopMotor->Get();
+
 			driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
 			driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));
 			twist = driveStick->GetTwist();
@@ -88,16 +93,29 @@ public:
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
+
+			if(curveY < driveY)
+			{
+				curveY = lastOutputY + ((lastOutputY - driveY)/2);
+			}
+			else
+			{
+				curveY = lastOutputY - (lastOutputY - driveY)/2;
+			}
+
 			/*curveY = (rampY + (driveY * driveY * driveY))/10;
 			if(curveY < 0.15 && curveY > -0.15)
 			{
 				curveY = 0;
 			}*/
-			curveY = driveY * driveY * driveY;
+			//curveY = driveY * driveY * driveY;
+
 			curveX = driveX * driveX * driveX;
 			curveT = twist * twist * twist;
 
 			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);
+
+			lastOutputY = curveY;
 			break;
 		default:
 			break;
