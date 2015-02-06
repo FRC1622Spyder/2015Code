@@ -98,9 +98,13 @@ public:
 			{
 				curveY = lastOutputY + ((lastOutputY - driveY)/2);
 			}
-			else
+			else if (curveY > driveY)
 			{
 				curveY = lastOutputY - (lastOutputY - driveY)/2;
+			}
+			else
+			{
+				curveY = driveY;
 			}
 
 			/*curveY = (rampY + (driveY * driveY * driveY))/10;
