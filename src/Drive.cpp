@@ -21,7 +21,6 @@ private:
 	float twist;
 	float curveT;
 	float rampVal;
-	float lastOutputY;
 
 public:
 	Drive() : Spyder::Subsystem("Drive")
@@ -50,7 +49,6 @@ public:
 
 		driveX = 0.0f;
 		curveX = 0.0f;
-		//lastOutputY = 0.0f;
 		driveX = 0.0f;//Store input of joystick to set speed of motors
 		curveX = 0.0f;//speed setting after curve
 		driveY = 0.0f;
@@ -76,7 +74,6 @@ public:
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, 2);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));//setting joystick values
-		lastOutputY = 0.0f;
 
 		//float rampY = 0.0f;
 		//double xAccel = accel->GetX();
@@ -107,25 +104,8 @@ public:
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
-			//if(curveY < driveY)
-			if(driveX > 0)
-			{
-				if(curveX < driveX)
-				{
-					curveX += 0.01;
-				}
-			}
-
-			if(driveX < 0)
-			{
-				if(curveX > driveX)
-				{
-					curveX -= 0.01;
-				}
-			}
-
 			//Attempted controlled acceleration thingy. DOES NOT WORK. REDO/FIX
-			/*if(curveY < driveY)
+			if(curveY < driveY)
 			{
 				curveY += rampVal;
 			}
@@ -142,8 +122,6 @@ public:
 			{
 				curveX -= rampVal;
 			}
-				curveY = driveY;
-			}/*
 
 			if(curveT < twist)
 			{
@@ -154,16 +132,7 @@ public:
 				curveT -= rampVal;
 			}
 
-			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);
-			}*/
-			//curveY = driveY * driveY * driveY;
-
-			curveX = driveX * driveX * driveX;//curve for axis
-			curveT = twist * twist * twist;
-
 			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);//setting mecanum drive with curved values
-
-			lastOutputY = curveY;//Record last output of Y
 			break;
 		}
 		default:
