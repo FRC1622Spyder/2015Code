@@ -8,9 +8,10 @@
 class Lift : public Spyder::Subsystem
 {
 private:
-	    bool lift1PosButton;//Button setting
+	    bool lift1PosButton;//Lift Button setting
 		bool lift2PosButton;
 		bool lift3PosButton;
+		bool tiltButton;//Tilt button setting
 
 		double lift1Pos;//Position setting
 		double lift2Pos;
@@ -27,11 +28,13 @@ private:
 		double liftCurrent;//Monitor lift current draw to estimate number of totes
 		int toteNumber;//Number of totes being carried
 
-		Victor *liftMotor;//Motor Controller
+		TalonSRX *liftMotor;//Motor Controller
+		TalonSRX *tiltMotor;
 		PIDController *liftControl;//PID Controller
-		Encoder *liftEncoder;//Encoder
+		Encoder *liftEncoder;//Lift Encoder
+		Encoder *tiltEncoder;//Tilt Encoder
 		PowerDistributionPanel *pdp;
-		Joystick *manControl;
+		Joystick *manControl;//manual control
 public:
 	Lift() : Spyder::Subsystem("Lift")
 	{
@@ -51,6 +54,9 @@ public:
 		lift2PosButton = Spyder::GetJoystick(secondLiftPos.GetVar(1))->GetRawButton(secondLiftPos.GetVar(2));
 		lift3PosButton = Spyder::GetJoystick(thirdLiftPos.GetVar(1))->GetRawButton(thirdLiftPos.GetVar(2));
 
+		Spyder::TwoIntConfig tiltPos("tiltButtonVal", 2, 2);//Configure Tilt Buttons
+		tiltButton = Spyder::GetJoystick(tiltPos.GetVar(1))->GetRawButton(tiltPos.GetVar(2));
+
 		Spyder::ConfigVar<double> firstLiftPosVal("LiftPos1DistanceVal", 10);//Configure lift distances
 		Spyder::ConfigVar<double> secondLiftPosVal("LiftPos2DistanceVal", 20);
 		Spyder::ConfigVar<double> thirdLiftPosVal("LiftPos3DistanceVal", 30);
@@ -63,11 +69,19 @@ public:
 		Spyder::ConfigVar<float> D_Val("D_ValueForLiftPID", 0.0);
 
 		Spyder::TwoIntConfig liftEncoderPorts("LiftEncoderInputPortVals", 0, 1);//Configure Lift Encoder
-		Spyder::ConfigVar<bool> invertEncoder("InvertLiftEncoder", false);
-		liftEncoder = new Encoder(liftEncoderPorts.GetVar(1), liftEncoderPorts.GetVar(2), invertEncoder.GetVal());
+		Spyder::ConfigVar<bool> liftInvertEncoder("InvertLiftEncoder", false);
+		liftEncoder = new Encoder(liftEncoderPorts.GetVar(1), liftEncoderPorts.GetVar(2), liftInvertEncoder.GetVal());
 
-		Spyder::ConfigVar<uint32_t> liftMotorVal ("liftMotorButton", 2);//Configure Lift Motor
-		liftMotor = new Victor(liftMotorVal.GetVal());
+		Spyder::TwoIntConfig tiltEncoderPorts("tiltEncoderInputPortVals", 2, 3);//Configure tilt encoder
+		Spyder::ConfigVar<bool> tiltInvertEncoder("InvertTiltEncoder", false);
+		tiltEncoder = new Encoder(tiltEncoderPorts.GetVar(1), tiltEncoderPorts.GetVar(2), tiltInvertEncoder.GetVal());
+		tiltEncoder->SetDistancePerPulse(1/1024);
+
+		Spyder::ConfigVar<uint32_t> liftMotorVal ("liftMotorPort", 3);//Configure Lift Motor
+		liftMotor = new TalonSRX(liftMotorVal.GetVal());
+
+		Spyder::ConfigVar<uint32_t> tiltMotorVal ("tiltMotorPort",2);//Configure Tilt Motor
+		tiltMotor = new TalonSRX(tiltMotorVal.GetVal());
 
 		pdp = new PowerDistributionPanel();//Configure PDP
 
@@ -104,6 +118,7 @@ public:
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
 		bool encoderTest;
+		bool tilt = false;
 		int encoderTestStart = 0;
 		float manualControl;
 		struct timespec tp;//Time stuff is used to ensure encoder is working
@@ -124,7 +139,7 @@ public:
 		case Spyder::M_DISABLED:
 			break;
 		case Spyder::M_TELEOP:
-			if(encoderTestTime <= 1)
+			if(encoderTestTime <= 0.5)
 			{
 				encoderTestStart = liftEncoder->Get();
 			}
@@ -139,6 +154,21 @@ public:
 					encoderTest = false;
 				}
 				encoderTestStart = curTime;
+			}
+
+			if(tiltButton)//Set tilt to move 1/2
+			{
+				tilt = true;
+				tiltEncoder->Reset();
+			}
+			if(tilt && tiltEncoder->GetDistance() < 1/2)
+			{
+				tiltMotor->Set(0.2);
+			}
+			else if(tilt && tiltEncoder->GetDistance() >= 1/2)
+			{
+				tiltMotor->Set(0);
+				tilt = false;
 			}
 
 			//Establish number of totes with current draw
