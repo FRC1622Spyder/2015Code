@@ -182,21 +182,51 @@ public:
 			else//manual control if encoder doesn't work
 			{
 				liftMotor->Set(manualControl);
-				if(lift1PosButton)
+				/*if(lift1PosButton)                            //backup for the PID Controller
 				{
 					if(liftEncoder->GetDistance() == lift1Pos)
 					{
-						Spyder::GetVictor(liftMotor->GetVal())->Set(0);
+						liftMotor->Set(0);
 					}
 					if(liftEncoder->GetDistance() > lift1Pos)
 					{
-						Spyder::GetVictor(liftMotor->GetVal())->Set(-0.2);
+						liftMotor->Set(-0.2);
 					}
 					if(liftEncoder->GetDistance() < lift1Pos)
 					{
-						Spyder::GetVictor(liftMotor->GetVal())->Set(0.2);
+						liftMotor->Set(0.2);
 					}
 				}
+				if(lift2PosButton)
+				{
+					if(liftEncoder->GetDistance() == lift2Pos)
+					{
+						liftMotor->Set(0);
+					}
+					if(liftEncoder->GetDistance() < lift2Pos)
+					{
+						liftMotor->Set(0.2);
+					}
+					if(liftEncoder->GetDistance() > lift2Pos)
+					{
+						liftMotor->Set(-0.2);
+					}
+				}
+				if(lift3PosButton)
+				{
+					if(liftEncoder->GetDistance() == lift3Pos)
+					{
+						liftMotor->Set(0);
+					}
+					if(liftEncoder->GetDistance() < lift3Pos)
+					{
+						liftMotor->Set(0.2);
+					}
+					if(liftEncoder->GetDistance() > lift3Pos)
+					{
+						liftMotor->Set(-0.2);
+					}
+				}*/
 
 			}
 			break;
