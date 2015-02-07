@@ -21,7 +21,6 @@ private:
 	float twist;
 	float curveT;
 	float rampVal;
-	float lastOutputY;
 
 public:
 	Drive() : Spyder::Subsystem("Drive")
@@ -35,16 +34,14 @@ public:
 
 	virtual void Init(Spyder::RunModes runmode)
 	{
-		Spyder::ConfigVar<double> mAccel("maxAccelerationVal", 0.5);
-		Spyder::ConfigVar<uint32_t> leftFrontMotor("leftFrontDriveMotor", 2);
-		//leftTopMotor = Spyder::GetVictor(leftFrontMotor.GetVal());
-		//accel = new BuiltInAccelerometer();
-		m_robotDrive = new RobotDrive(2,3,1,0);
+		Spyder::ConfigVar<float> accelRamp("driveAccelRampVal", 0.02);//GetAccelerationRamp
+		rampVal = accelRamp.GetVal();
+
+		m_robotDrive = new RobotDrive(2,3,1,0);//Configure mecanum drive
 		m_robotDrive->SetExpiration(0.1);
 		m_robotDrive->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);	// invert the left side motors
 		m_robotDrive->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
 
-		//lastOutputY = 0.0f;
 		driveX = 0.0f;
 		curveX = 0.0f;
 		driveY = 0.0f;
@@ -68,12 +65,12 @@ public:
 	{
 		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 1);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
-		lastOutputY = 0.0f;
-
-		//float rampY = 0.0f;
-		//double xAccel = accel->GetX();
-		//double yAccel = accel->GetY();
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, 2);
+
+		driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
+		driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));
+		twist = driveStick->GetTwist();
+
 
 		switch(runmode)
 		{
@@ -84,43 +81,41 @@ public:
 			break;
 
 		case Spyder::M_TELEOP:
-			//rampY = leftTopMotor->Get();
-
-			driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
-			driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));
-			twist = driveStick->GetTwist();
+		{
 			driveX = fabs(driveX) > Spyder::GetDeadzone() ? driveX : 0;//Set proper deadzone;
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
-
 			if(curveY < driveY)
 			{
-				curveY = lastOutputY + ((lastOutputY - driveY)/2);
+				curveY += rampVal;
 			}
-			else if (curveY > driveY)
+			else if(curveY > driveY)
 			{
-				curveY = lastOutputY - (lastOutputY - driveY)/2;
-			}
-			else
-			{
-				curveY = driveY;
+				curveY -= rampVal;
 			}
 
-			/*curveY = (rampY + (driveY * driveY * driveY))/10;
-			if(curveY < 0.15 && curveY > -0.15)
+			if(curveX < driveX)
 			{
-				curveY = 0;
-			}*/
-			//curveY = driveY * driveY * driveY;
+				curveX += rampVal;
+			}
+			else if(curveX > driveX)
+			{
+				curveX -= rampVal;
+			}
 
-			curveX = driveX * driveX * driveX;
-			curveT = twist * twist * twist;
+			if(curveT < twist)
+			{
+				curveT += rampVal;
+			}
+			else if(curveT > twist)
+			{
+				curveT -= rampVal;
+			}
 
 			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);
-
-			lastOutputY = curveY;
 			break;
+		}
 		default:
 			break;
 		}
