@@ -47,9 +47,9 @@ public:
 
 	virtual void Init(Spyder::RunModes runmode)
 	{
-		Spyder::TwoIntConfig firstLiftPos("LiftPos1ButtonVal", 2, 1);//Configure Lift Buttons
-		Spyder::TwoIntConfig secondLiftPos("LiftPos2ButtonVal", 2, 4);
-		Spyder::TwoIntConfig thirdLiftPos("LiftPos3ButtonVal", 2, 3);
+		Spyder::TwoIntConfig firstLiftPos("liftPos1ButtonVal", 2, 1);//Configure Lift Buttons
+		Spyder::TwoIntConfig secondLiftPos("liftPos2ButtonVal", 2, 4);
+		Spyder::TwoIntConfig thirdLiftPos("liftPos3ButtonVal", 2, 3);
 		lift1PosButton = Spyder::GetJoystick(firstLiftPos.GetVar(1))->GetRawButton(firstLiftPos.GetVar(2));
 		lift2PosButton = Spyder::GetJoystick(secondLiftPos.GetVar(1))->GetRawButton(secondLiftPos.GetVar(2));
 		lift3PosButton = Spyder::GetJoystick(thirdLiftPos.GetVar(1))->GetRawButton(thirdLiftPos.GetVar(2));
@@ -57,9 +57,9 @@ public:
 		Spyder::TwoIntConfig tiltPos("tiltButtonVal", 2, 2);//Configure Tilt Buttons
 		tiltButton = Spyder::GetJoystick(tiltPos.GetVar(1))->GetRawButton(tiltPos.GetVar(2));
 
-		Spyder::ConfigVar<double> firstLiftPosVal("LiftPos1DistanceVal", 10);//Configure lift distances
-		Spyder::ConfigVar<double> secondLiftPosVal("LiftPos2DistanceVal", 20);
-		Spyder::ConfigVar<double> thirdLiftPosVal("LiftPos3DistanceVal", 30);
+		Spyder::ConfigVar<double> firstLiftPosVal("liftPos1DistanceVal", 10);//Configure lift distances
+		Spyder::ConfigVar<double> secondLiftPosVal("liftPos2DistanceVal", 20);
+		Spyder::ConfigVar<double> thirdLiftPosVal("liftPos3DistanceVal", 30);
 		lift1Pos = firstLiftPosVal.GetVal();
 		lift2Pos = secondLiftPosVal.GetVal();
 		lift3Pos = thirdLiftPosVal.GetVal();
@@ -68,12 +68,12 @@ public:
 		Spyder::ConfigVar<float> I_Val("I_ValueForLiftPID", 0.001);
 		Spyder::ConfigVar<float> D_Val("D_ValueForLiftPID", 0.0);
 
-		Spyder::TwoIntConfig liftEncoderPorts("LiftEncoderInputPortVals", 0, 1);//Configure Lift Encoder
-		Spyder::ConfigVar<bool> liftInvertEncoder("InvertLiftEncoder", false);
+		Spyder::TwoIntConfig liftEncoderPorts("liftEncoderInputPortVals", 0, 1);//Configure Lift Encoder
+		Spyder::ConfigVar<bool> liftInvertEncoder("invertLiftEncoder", false);
 		liftEncoder = new Encoder(liftEncoderPorts.GetVar(1), liftEncoderPorts.GetVar(2), liftInvertEncoder.GetVal());
 
 		Spyder::TwoIntConfig tiltEncoderPorts("tiltEncoderInputPortVals", 2, 3);//Configure tilt encoder
-		Spyder::ConfigVar<bool> tiltInvertEncoder("InvertTiltEncoder", false);
+		Spyder::ConfigVar<bool> tiltInvertEncoder("invertTiltEncoder", false);
 		tiltEncoder = new Encoder(tiltEncoderPorts.GetVar(1), tiltEncoderPorts.GetVar(2), tiltInvertEncoder.GetVal());
 		tiltEncoder->SetDistancePerPulse(1/1024);
 
@@ -128,7 +128,7 @@ public:
 		liftControl->Enable();
 		liftCurrent = pdp->GetCurrent(liftMotor->GetChannel());//Getting current draw of motor
 
-		Spyder::TwoIntConfig manualControlJoy("LiftManualControlJoystickVal", 2, 1);//Setting manual control to joystick
+		Spyder::TwoIntConfig manualControlJoy("liftManualControlJoystickVal", 2, 1);//Setting manual control to joystick
 		manControl = Spyder::GetJoystick(manualControlJoy.GetVar(1));
 		manualControl = manControl->GetRawAxis(manualControlJoy.GetVar(1));
 		manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone
