@@ -5,15 +5,12 @@
 #include <iostream>
 #include <cmath>
 
-//float driveX;
-//float driveY;
-
 class Drive : public Spyder::Subsystem
 {
 private:
 	RobotDrive *m_robotDrive;
 	Joystick *driveStick;
-	Accelerometer *accel;
+	//Accelerometer *accel;
 	float driveX;
 	float curveX;
 	float driveY;
@@ -38,17 +35,11 @@ public:
 		rampVal = accelRamp.GetVal();
 
 		m_robotDrive = new RobotDrive(2,3,1,0);//Configure mecanum drive
-		Spyder::ConfigVar<double> mAccel("maxAccelerationVal", 0.5);//create max acceleration value if we are using one
-		Spyder::ConfigVar<uint32_t> leftFrontMotor("leftFrontDriveMotor", 2);
-		//leftTopMotor = Spyder::GetVictor(leftFrontMotor.GetVal());
-		//accel = new BuiltInAccelerometer();
-		m_robotDrive = new RobotDrive(2,3,1,0);//initialize mecanum drive with ports 2,3,1,0. MAKE INTO CONFIG VARS
+
 		m_robotDrive->SetExpiration(0.1);
 		m_robotDrive->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);	// invert the left side motors
 		m_robotDrive->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
 
-		driveX = 0.0f;
-		curveX = 0.0f;
 		driveX = 0.0f;//Store input of joystick to set speed of motors
 		curveX = 0.0f;//speed setting after curve
 		driveY = 0.0f;
@@ -73,17 +64,6 @@ public:
 		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 1);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, 2);
-		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));//setting joystick values
-
-		//float rampY = 0.0f;
-		//double xAccel = accel->GetX();
-		//double yAccel = accel->GetY();
-		driveStick->SetAxisChannel(Joystick::kTwistAxis, 2);//setting twist axis
-
-		driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
-		driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));
-		twist = driveStick->GetTwist();
-
 
 		switch(runmode)
 		{
@@ -95,7 +75,6 @@ public:
 
 		case Spyder::M_TELEOP:
 		{
-			//rampY = leftTopMotor->Get();
 			driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
 			driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));//Setting axis of joystick
 			twist = driveStick->GetTwist();
@@ -104,7 +83,6 @@ public:
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
-			//Attempted controlled acceleration thingy. DOES NOT WORK. REDO/FIX
 			if(curveY < driveY)
 			{
 				curveY += rampVal;
