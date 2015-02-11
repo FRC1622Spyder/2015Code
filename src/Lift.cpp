@@ -28,11 +28,11 @@ private:
 		double liftCurrent;//Monitor lift current draw to estimate number of totes
 		int toteNumber;//Number of totes being carried
 
-		TalonSRX *liftMotor;//Motor Controller
-		TalonSRX *tiltMotor;
+		CANTalon *liftMotor;//Motor Controller
+		CANTalon *tiltMotor;
 		PIDController *liftControl;//PID Controller
-		Encoder *liftEncoder;//Lift Encoder
-		Encoder *tiltEncoder;//Tilt Encoder
+		//Encoder *liftEncoder;//Lift Encoder
+		//Encoder *tiltEncoder;//Tilt Encoder
 		PowerDistributionPanel *pdp;
 		Joystick *manControl;//manual control
 public:
@@ -68,20 +68,20 @@ public:
 		Spyder::ConfigVar<float> I_Val("I_ValueForLiftPID", 0.001);
 		Spyder::ConfigVar<float> D_Val("D_ValueForLiftPID", 0.0);
 
-		Spyder::TwoIntConfig liftEncoderPorts("liftEncoderInputPortVals", 0, 1);//Configure Lift Encoder
+		/*Spyder::TwoIntConfig liftEncoderPorts("liftEncoderInputPortVals", 0, 1);//Configure Lift Encoder
 		Spyder::ConfigVar<bool> liftInvertEncoder("invertLiftEncoder", false);
 		liftEncoder = new Encoder(liftEncoderPorts.GetVar(1), liftEncoderPorts.GetVar(2), liftInvertEncoder.GetVal());
 
 		Spyder::TwoIntConfig tiltEncoderPorts("tiltEncoderInputPortVals", 2, 3);//Configure tilt encoder
 		Spyder::ConfigVar<bool> tiltInvertEncoder("invertTiltEncoder", false);
 		tiltEncoder = new Encoder(tiltEncoderPorts.GetVar(1), tiltEncoderPorts.GetVar(2), tiltInvertEncoder.GetVal());
-		tiltEncoder->SetDistancePerPulse(1/1024);
+		tiltEncoder->SetDistancePerPulse(1/1024);*/
 
-		Spyder::ConfigVar<uint32_t> liftMotorVal ("liftMotorPort", 3);//Configure Lift Motor
-		liftMotor = new TalonSRX(liftMotorVal.GetVal());
+		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 5);//Configure Lift Motor
+		liftMotor = new CANTalon(liftMotorVal.GetVal());
 
-		Spyder::ConfigVar<uint32_t> tiltMotorVal ("tiltMotorPort",2);//Configure Tilt Motor
-		tiltMotor = new TalonSRX(tiltMotorVal.GetVal());
+		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",6);//Configure Tilt Motor
+		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
 
 		pdp = new PowerDistributionPanel();//Configure PDP
 
@@ -99,7 +99,7 @@ public:
 		toteCurrentFive = fiveToteCurVal.GetVal();
 		toteCurrentSix = sixToteCurVal.GetVal();*/
 
-		liftControl = new PIDController(P_Val.GetVal(), I_Val.GetVal(), D_Val.GetVal(), liftEncoder, liftMotor);//Create PID system for liftmotor. Uses lift encoder values.
+		//liftControl = new PIDController(P_Val.GetVal(), I_Val.GetVal(), D_Val.GetVal(), liftEncoder, liftMotor);//Create PID system for liftmotor. Uses lift encoder values.
 
 		//struct timespec tp;
 		switch(runmode)
@@ -117,21 +117,22 @@ public:
 	}
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
-		bool encoderTest;
-		bool tilt = false;
-		int encoderTestStart = 0;
+		//bool encoderTest;
+		//bool tilt = false;
+		//int encoderTestStart = 0;
 		float manualControl;
-		struct timespec tp;//Time stuff is used to ensure encoder is working
+		float manualTilt;
+		/*struct timespec tp;//Time stuff is used to ensure encoder is working
 		clock_gettime(CLOCK_REALTIME, &tp);
 		double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
-		double encoderTestTime = curTime - encoderTestStart;
-		liftControl->Enable();
-		liftCurrent = pdp->GetCurrent(liftMotor->GetChannel());//Getting current draw of motor
+		double encoderTestTime = curTime - encoderTestStart;*/
+		//liftControl->Enable();
+		//liftCurrent = pdp->GetCurrent(liftMotor->GetChannel());//Getting current draw of motor
 
-		Spyder::TwoIntConfig manualControlJoy("liftManualControlJoystickVal", 2, 1);//Setting manual control to joystick
+		Spyder::TwoIntConfig manualControlJoy("liftManualControlJoystickVal", 1, 3);//Setting manual control to joystick
 		manControl = Spyder::GetJoystick(manualControlJoy.GetVar(1));
-		manualControl = manControl->GetRawAxis(manualControlJoy.GetVar(1));
-		manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone
+
+
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
@@ -139,7 +140,14 @@ public:
 		case Spyder::M_DISABLED:
 			break;
 		case Spyder::M_TELEOP:
-			if(encoderTestTime <= 0.5)
+			manualControl = manControl->GetRawAxis(manualControlJoy.GetVar(2));
+			manualTilt = manControl->GetRawAxis(manualControlJoy.GetVar(1));
+			manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone
+			manualTilt = fabs(manualTilt) > Spyder::GetDeadzone() ? manualTilt : 0;
+
+			liftMotor->Set(manualControl);
+			tiltMotor->Set(manualTilt);
+			/*if(encoderTestTime <= 0.5)
 			{
 				encoderTestStart = liftEncoder->Get();
 			}
@@ -193,7 +201,7 @@ public:
 			}
 			else//totes = 6
 			{
-			}*/
+			}
 			if(encoderTest)//If encoder is good, use PID
 			{
 				if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
@@ -256,9 +264,9 @@ public:
 					{
 						liftMotor->Set(-0.2);
 					}
-				}*/
+				}
 
-			}
+			}*/
 			break;
 		default:
 			break;
