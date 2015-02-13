@@ -31,7 +31,6 @@ namespace Spyder
 	ConfigVarBase::ConfigVarBase(const std::string &strName)
 	{
 		cfgvar_map[strName] = this;
-		std::cout<<strName<<std::endl;
 	}
 
 	TwoIntConfig::TwoIntConfig(const std::string &strName, int val1, int val2) : ConfigVarBase(strName), m_val1(val1), m_val2(val2)
