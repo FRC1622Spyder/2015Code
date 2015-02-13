@@ -22,13 +22,19 @@ private:
 	float axisTotVal;
 	float xWeight;
 	float yWeight;
-	float zWeight;*/
+	float zWeight;
+
+	float leftTopSpeed;
+	float leftBackSpeed;
+	float rightTopSpeed;
+	flaot rightBackSpeed;*/
 
 	float driveX;
 	float curveX;
 	float driveY;
 	float curveY;
 	float twist;
+	float curveZ;
 	float curveT;
 	float rampVal;
 
@@ -143,7 +149,13 @@ public:
 
 			absVal_x/axisTotVal = xWeight;
 			absVal_y/axisTotVal = yWeight;
-			absVal_z/axisTotVal = zWeight;*/
+			absVal_z/axisTotVal = zWeight;
+
+			frontLeftMotor->Set(driveY*yWeight - driveX*xWeight);
+			backLeftMotor->Set(driveY*yWeight + driveX*xWeight);
+			frontRightMotor->Set(driveY*yWeight + driveX*xWeight);
+			backRightMotor->Set(driveY*yWeight - driveX*xWeight);
+			*/
 
 			if(curveY < driveY)
 			{
@@ -172,7 +184,11 @@ public:
 				curveT -= rampVal;
 			}
 
-			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);//setting mecanum drive with curved values
+			curveZ = -curveT;
+
+
+
+			m_robotDrive->MecanumDrive_Cartesian(curveY, curveX, curveZ);//setting mecanum drive with curved values
 			break;
 		}
 		default:
