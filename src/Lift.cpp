@@ -77,10 +77,10 @@ public:
 		tiltEncoder = new Encoder(tiltEncoderPorts.GetVar(1), tiltEncoderPorts.GetVar(2), tiltInvertEncoder.GetVal());
 		tiltEncoder->SetDistancePerPulse(1/1024);*/
 
-		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 5);//Configure Lift Motor
+		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 6);//Configure Lift Motor
 		liftMotor = new CANTalon(liftMotorVal.GetVal());
 
-		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",6);//Configure Tilt Motor
+		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",3);//Configure Tilt Motor
 		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
 
 		pdp = new PowerDistributionPanel();//Configure PDP
@@ -146,7 +146,7 @@ public:
 			manualTilt = fabs(manualTilt) > Spyder::GetDeadzone() ? manualTilt : 0;
 
 			liftMotor->Set(manualControl);
-			tiltMotor->Set(manualTilt);
+			tiltMotor->Set(manualTilt/2);
 			/*if(encoderTestTime <= 0.5)
 			{
 				encoderTestStart = liftEncoder->Get();

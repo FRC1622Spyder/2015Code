@@ -51,10 +51,10 @@ public:
 	virtual void Init(Spyder::RunModes runmode)
 	{
 		Spyder::ConfigVar<float> accelRamp("driveAccelRampVal", 0.02);//GetAccelerationRamp
-		Spyder::ConfigVar<int> leftFrontCAN("driveLeftFrontCAN_id", 1);
+		Spyder::ConfigVar<int> leftFrontCAN("driveLeftFrontCAN_id", 5);
 		Spyder::ConfigVar<int> rightFrontCAN("driveRightFrontCAN_id", 2);
-		Spyder::ConfigVar<int> leftBackCAN("driveLeftBackCAN_id", 3);
-		Spyder::ConfigVar<int> rightBackCAN("driveRightBackCAN_id", 4);
+		Spyder::ConfigVar<int> leftBackCAN("driveLeftBackCAN_id", 4);
+		Spyder::ConfigVar<int> rightBackCAN("driveRightBackCAN_id", 1);
 
 		frontLeftMotor = new CANTalon(leftFrontCAN.GetVal());
 		frontRightMotor = new CANTalon(rightFrontCAN.GetVal());
@@ -120,6 +120,10 @@ public:
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
+			curveX = -driveX;//To fix the robot moving in the opposite direction
+			curveY = -driveY;
+			curveT = -twist;
+
 			/*if(driveX < 0)
 			{
 				absVal_x = -driveX;
@@ -157,7 +161,7 @@ public:
 			backRightMotor->Set(driveY*yWeight - driveX*xWeight);
 			*/
 
-			if(curveY < driveY)
+			/*if(curveY < driveY)
 			{
 				curveY += rampVal;
 			}
@@ -182,13 +186,13 @@ public:
 			else if(curveT > twist)
 			{
 				curveT -= rampVal;
-			}
+			}*/
 
-			curveZ = -curveT;
+			//curveZ = -curveT;
 
 
 
-			m_robotDrive->MecanumDrive_Cartesian(curveY, curveX, curveZ);//setting mecanum drive with curved values
+			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);//setting mecanum drive with curved values
 			break;
 		}
 		default:
