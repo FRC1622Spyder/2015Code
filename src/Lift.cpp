@@ -35,6 +35,7 @@ private:
 		//Encoder *tiltEncoder;//Tilt Encoder
 		PowerDistributionPanel *pdp;
 		Joystick *manControl;//manual control
+		DigitalInput *liftHome;
 public:
 	Lift() : Spyder::Subsystem("Lift")
 	{
@@ -82,6 +83,9 @@ public:
 
 		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",3);//Configure Tilt Motor
 		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
+
+		Spyder::ConfigVar<uint32_t> liftHomePort("liftHomeLimitPort", 5);
+		liftHome = new DigitalInput(liftHomePort.GetVal());
 
 		pdp = new PowerDistributionPanel();//Configure PDP
 
@@ -147,6 +151,12 @@ public:
 
 			liftMotor->Set(manualControl);
 			tiltMotor->Set(manualTilt/2);
+
+			//reset lift encoder when it hits home
+			if(liftHome->Get())
+			{
+				//liftEncoder->Reset();
+			}
 			/*if(encoderTestTime <= 0.5)
 			{
 				encoderTestStart = liftEncoder->Get();
