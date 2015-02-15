@@ -36,6 +36,10 @@ private:
 		PowerDistributionPanel *pdp;
 		Joystick *manControl;//manual control
 		DigitalInput *liftHome;
+
+		bool openClawButton;
+		bool closeClawButton;
+		DoubleSolenoid *clawSol;
 public:
 	Lift() : Spyder::Subsystem("Lift")
 	{
@@ -78,10 +82,10 @@ public:
 		tiltEncoder = new Encoder(tiltEncoderPorts.GetVar(1), tiltEncoderPorts.GetVar(2), tiltInvertEncoder.GetVal());
 		tiltEncoder->SetDistancePerPulse(1/1024);*/
 
-		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 6);//Configure Lift Motor
+		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 3);//Configure Lift Motor
 		liftMotor = new CANTalon(liftMotorVal.GetVal());
 
-		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",3);//Configure Tilt Motor
+		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",6);//Configure Tilt Motor
 		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
 
 		Spyder::ConfigVar<uint32_t> liftHomePort("liftHomeLimitPort", 5);
@@ -106,6 +110,8 @@ public:
 		//liftControl = new PIDController(P_Val.GetVal(), I_Val.GetVal(), D_Val.GetVal(), liftEncoder, liftMotor);//Create PID system for liftmotor. Uses lift encoder values.
 
 		//struct timespec tp;
+
+		clawSol = new DoubleSolenoid (7, 0, 1);
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
@@ -121,6 +127,10 @@ public:
 	}
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
+
+		Spyder::TwoIntConfig openClaw ("openClawButtonVal", 1, 7);//Initialize the claw ports
+		Spyder::TwoIntConfig closeClaw ("closeClawButtonVal", 1, 8);
+
 		//bool encoderTest;
 		//bool tilt = false;
 		//int encoderTestStart = 0;
@@ -144,6 +154,22 @@ public:
 		case Spyder::M_DISABLED:
 			break;
 		case Spyder::M_TELEOP:
+			openClawButton = Spyder::GetJoystick(openClaw.GetVar(1))->GetRawButton(openClaw.GetVar(2));//Get Button Vals
+			closeClawButton = Spyder::GetJoystick(closeClaw.GetVar(1))->GetRawButton(closeClaw.GetVar(2));
+
+			if(openClawButton)//Open Claw
+			{
+				clawSol->Set(DoubleSolenoid::kForward);
+			}
+			else if(closeClawButton)//Close Claw
+			{
+				clawSol->Set(DoubleSolenoid::kReverse);
+			}
+			else
+			{
+				clawSol->Set(DoubleSolenoid::kOff);
+			}
+
 			manualControl = manControl->GetRawAxis(manualControlJoy.GetVar(2));
 			manualTilt = manControl->GetRawAxis(manualControlJoy.GetVar(1));
 			manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone

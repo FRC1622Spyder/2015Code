@@ -1,4 +1,4 @@
-#include "subsystem.h"
+/*#include "subsystem.h"
 #include "Config.h"
 #include "WPIObjMgr.h"
 #include "WPILib.h"
@@ -24,7 +24,8 @@ public:
 	virtual void Init(Spyder::RunModes runmode)
 	{
 		Spyder::TwoIntConfig clawSolPorts("clawExtendSolPorts", 0 , 1);//Initialize the solenoids!
-		clawSol = new DoubleSolenoid (clawSolPorts.GetVar(1), clawSolPorts.GetVar(2));
+		//clawSol = new DoubleSolenoid (clawSolPorts.GetVar(1), clawSolPorts.GetVar(2));
+		clawSol = new DoubleSolenoid (7, 0, 1);
 
 		switch(runmode)
 		{
@@ -41,7 +42,6 @@ public:
 		Spyder::TwoIntConfig openClaw ("openClawButtonVal", 2, 7);//Initialize the claw ports
 		Spyder::TwoIntConfig closeClaw ("closeClawButtonVal", 2, 8);
 
-
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
@@ -53,13 +53,10 @@ public:
 			{
 				clawSol->Set(DoubleSolenoid::kForward);
 			}
-			else if(closeClawButton)//Close Claw
+
+			if(closeClawButton)//Close Claw
 			{
 				clawSol->Set(DoubleSolenoid::kReverse);
-			}
-			else
-			{
-				clawSol->Set(DoubleSolenoid::kOff);
 			}
 			break;
 		default:
@@ -73,4 +70,4 @@ public:
 
 
 
-};
+};*/
