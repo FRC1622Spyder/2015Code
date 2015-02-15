@@ -10,8 +10,7 @@ class Claw : public Spyder::Subsystem
 private:
 	bool openClawButton;
 	bool closeClawButton;
-	Solenoid *clawSolExtend;
-	Solenoid *clawSolRetract;
+	DoubleSolenoid *clawSol;
 
 public:
 	Claw() : Spyder::Subsystem("Claw")
@@ -24,10 +23,8 @@ public:
 
 	virtual void Init(Spyder::RunModes runmode)
 	{
-		Spyder::ConfigVar<uint32_t> extendSol("clawExtendSolPort", 0);//Initialize the solenoids!
-		Spyder::ConfigVar<uint32_t> retractSol("clawRetractSolPort", 1);
-		clawSolExtend = new Solenoid (extendSol.GetVal());
-		clawSolRetract = new Solenoid (retractSol.GetVal());
+		Spyder::TwoIntConfig clawSolPorts("clawExtendSolPorts", 0 , 1);//Initialize the solenoids!
+		clawSol = new DoubleSolenoid (clawSolPorts.GetVar(1), clawSolPorts.GetVar(2));
 
 		switch(runmode)
 		{
@@ -54,13 +51,15 @@ public:
 			closeClawButton = Spyder::GetJoystick(closeClaw.GetVar(1))->GetRawButton(closeClaw.GetVar(2));
 			if(openClawButton)//Open Claw
 			{
-				clawSolExtend->Set(false);//Set false solenoids before setting true
-				clawSolRetract->Set(true);
+				clawSol->Set(DoubleSolenoid::kForward);
 			}
-			if(closeClawButton)//Close Claw
+			else if(closeClawButton)//Close Claw
 			{
-				clawSolRetract->Set(false);
-				clawSolExtend->Set(true);
+				clawSol->Set(DoubleSolenoid::kReverse);
+			}
+			else
+			{
+				clawSol->Set(DoubleSolenoid::kOff);
 			}
 			break;
 		default:

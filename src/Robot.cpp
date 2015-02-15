@@ -1,17 +1,28 @@
 #include "WPILib.h"
 #include "Config.h"
 #include "subsystem.h"
+#include "RGBStrip.h"
 #include <fstream>
 
 class Robot: public IterativeRobot
 {
 private:
 	LiveWindow *lw;
+	Spyder::RGBStrip *ledStrip;
+
 	unsigned int usPeriodCounter;
 public:
 	void RobotInit()
 	{
+		Spyder::ConfigVar<uint32_t> rChannel("redLEDChannel", 10);
+		Spyder::ConfigVar<uint32_t> gChannel("greenLEDChannel", 11);
+		Spyder::ConfigVar<uint32_t> bChannel("blueLEDChannel", 12);
+		ledStrip = new Spyder::RGBStrip(rChannel.GetVal(), gChannel.GetVal(), bChannel.GetVal());
+
+		//ledStrip->SetColor(10, 10, 10);
+
 		lw = LiveWindow::GetInstance();
+
 
 		std::fstream file;
 		file.open("/etc/SpyderConfig.cfg", std::ios_base::in);
