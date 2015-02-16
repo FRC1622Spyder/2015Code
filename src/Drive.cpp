@@ -21,17 +21,15 @@ private:
 	bool setTwistSense;
 
 	float driveX;
-	float curveX;
 	float driveY;
-	float curveY;
 	float twist;
-	float curveT;
-	float curveZ;
-	float rampVal;
 
 	float xVel;
 	float yVel;
 	float twistVel;
+
+	double autoStart;
+	unsigned char autoPhase;
 
 public:
 	Drive() : Spyder::Subsystem("Drive")
@@ -45,18 +43,16 @@ public:
 
 	virtual void Init(Spyder::RunModes runmode)
 	{
-		Spyder::ConfigVar<float> accelRamp("driveAccelRampVal", 0.02);//GetAccelerationRamp
 		Spyder::ConfigVar<int> leftFrontCAN("driveLeftFrontCAN_id", 5);
 		Spyder::ConfigVar<int> rightFrontCAN("driveRightFrontCAN_id", 2);
 		Spyder::ConfigVar<int> leftBackCAN("driveLeftBackCAN_id", 4);
 		Spyder::ConfigVar<int> rightBackCAN("driveRightBackCAN_id", 1);
 
+
 		frontLeftMotor = new CANTalon(leftFrontCAN.GetVal());
 		frontRightMotor = new CANTalon(rightFrontCAN.GetVal());
 		backLeftMotor = new CANTalon(leftBackCAN.GetVal());
 		backRightMotor = new CANTalon(rightBackCAN.GetVal());
-
-		rampVal = accelRamp.GetVal();
 
 		m_robotDrive = new RobotDrive(frontLeftMotor,backLeftMotor,frontRightMotor,backRightMotor);//Configure mecanum drive
 
@@ -69,20 +65,22 @@ public:
 		setTwistSense = false;
 
 		driveX = 0.0f;//Store input of joystick to set speed of motors
-		curveX = 0.0f;//speed setting after curve
 		driveY = 0.0f;
-		curveY = 0.0f;
 		twist = 0.0f;
-		curveT = 0.0f;
 
 		xVel = 0.0f;
 		yVel = 0.0f;
 		twistVel = 0.0f;
 
 		m_robotDrive->SetSafetyEnabled(false);
+
+		struct timespec tp;
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
+			autoPhase = 0;
+			clock_gettime(CLOCK_REALTIME, &tp);
+			autoStart = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			break;
 		case Spyder::M_TELEOP:
 			break;
@@ -97,12 +95,44 @@ public:
 		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 3);
 		Spyder::TwoIntConfig twistSenseJoy("twistSensitivitySliderBind", 0, 4);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
-		driveStick->SetAxisChannel(Joystick::kTwistAxis, 2);
+		driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
 
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
+		{
+			struct timespec tp;
+			clock_gettime(CLOCK_REALTIME, &tp);
+			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
+			double autoRunTime = curTime - autoStart;
+
+			switch(autoPhase)
+			{
+			case 0:
+				if(autoRunTime >= 3.5)//after 3.5 seconds, drive forward
+				{
+					frontLeftMotor->Set(-0.5);
+					backLeftMotor->Set(-0.5);
+					frontRightMotor->Set(0.5);
+					backRightMotor->Set(0.5);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 1:
+				if (autoRunTime > 7)//after 3.5 seconds of driving, stop
+				{
+					frontLeftMotor->Set(0);
+					backLeftMotor->Set(0);
+					frontRightMotor->Set(0);
+					backRightMotor->Set(0);
+				}
+				break;
+			default:
+				break;
+			}
 			break;
+		}
 
 		case Spyder::M_DISABLED:
 			break;
@@ -115,58 +145,73 @@ public:
 
 			setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
 			twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
+			//twistSense = driveStick->GetRawAxis(3);
 
 			if(setTwistSense)
 			{
-				zMultiplier = 1.0f + twistSense;
+				zMultiplier = (twistSense+1)/2;
 			}
+
 
 			driveX = fabs(driveX) > Spyder::GetDeadzone() ? driveX : 0;//Set proper deadzone;
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
-			twist = fabs(twist) > Spyder::GetDeadzone()*zMultiplier ? twist : 0;
+			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
 			/*curveX = -driveX;//To fix the robot moving in the opposite direction
 			curveY = -driveY;
 			curveT = -twist;*/
 
 
-			if(curveY < driveY)//I really should replace this with an array and a for loop or something
+			/*if(curveY < driveY -.05)//I really should replace this with an array and a for loop or something
 			{
 				curveY += rampVal;
 			}
-			else if(curveY > driveY)
+			else if(curveY > driveY +.05)
 			{
 				curveY -= rampVal;
 			}
+			else
+			{
+				curveY = driveY;
+			}
 
-			if(curveX < driveX)
+			if(curveX < driveX - .05)
 			{
 				curveX += rampVal;
 			}
-			else if(curveX > driveX)
+			else if(curveX > driveX + .05)
 			{
 				curveX -= rampVal;
 			}
+			else
+			{
+				curveX = driveX;
+			}
 
-			if(curveT < twist)
+			if(curveT < twist - .05)
 			{
 				curveT += rampVal;
 			}
-			else if(curveT > twist)
+			else if(curveT > twist + .05)
 			{
 				curveT -= rampVal;
 			}
+			else
+			{
+				curveT = twist;
+			}*/
 
-			xVel = -curveX;//setting values to correct orientation
-			yVel = -curveY;
-			if(-curveT > 0)//Should give twist more control
+			xVel = -driveX;//setting values to correct orientation
+			yVel = -driveY;
+			twistVel = -twist * zMultiplier;
+			/*if(-twist > 0)//Should give twist more control
 			{
-				twistVel = -curveT - Spyder::GetDeadzone();
+				twistVel = -twist - Spyder::GetDeadzone();
 			}
-			else if(-curveT < 0)
+			else if(-twist < 0)
 			{
-				twistVel = -curveT + Spyder::GetDeadzone();
-			}
+				twistVel = -twist + Spyder::GetDeadzone();
+			}*/
 
 
 			m_robotDrive->MecanumDrive_Cartesian(xVel, yVel, twistVel);//setting mecanum drive with curved values
