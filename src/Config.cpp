@@ -1,5 +1,4 @@
 #include "Config.h"
-#include <hash_map>
 #include <sstream>
 #include <iostream>
 #include <ostream>
