@@ -177,11 +177,6 @@ public:
 			driveY = driveStick->GetRawAxis(yJoystick.GetVal());//Setting axis of joystick
 			twist = driveStick->GetTwist();
 
-			/*std::cout<<frontLeftMotor->GetEncPosition()<<std::endl;
-			std::cout<<backLeftMotor->GetEncPosition()<<std::endl;
-			std::cout<<frontRightMotor->GetEncPosition()<<std::endl;
-			std::cout<<backRightMotor->GetEncPosition()<<std::endl;*/
-
 			setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
 			twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
 			//twistSense = driveStick->GetRawAxis(3);
@@ -239,22 +234,6 @@ public:
 			{
 				twistVel = curveT;
 			}
-
-			/*xVel = -driveX;//setting values to correct orientation
-			yVel = -driveY;
-			twistVel = -twist * zMultiplier;
-			if(-twist > 0)//Should give twist more control
-			{
-				twistVel = -twist - Spyder::GetDeadzone();
-			}
-			else if(-twist < 0)
-			{
-				twistVel = -twist + Spyder::GetDeadzone();
-			}*/
-
-			std::cout<<"BackRightMotorSetting = "<<backRightMotor->Get()<<std::endl;
-			std::cout<<"FrontRightMotorSetting = "<<frontRightMotor->Get()<<std::endl;
-
 
 			m_robotDrive->MecanumDrive_Cartesian(xVel, yVel, twistVel);//setting mecanum drive with curved values
 			break;

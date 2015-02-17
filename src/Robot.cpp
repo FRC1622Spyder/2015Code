@@ -8,6 +8,7 @@ class Robot: public IterativeRobot
 {
 private:
 	LiveWindow *lw;
+	//SmartDashboard *smartDashboard;
 	//Spyder::RGBStrip *ledStrip;
 	unsigned int usPeriodCounter;
 public:
@@ -72,6 +73,8 @@ public:
 
 	void TeleopPeriodic()
 	{
+
+
 		std::vector<Spyder::Subsystem*> subsystems = Spyder::SubsystemMgr::GetSingleton()->GetSubsystems();
 		for (size_t i = 0; i < subsystems.size(); i++) {
 			if (usPeriodCounter % subsystems[i]->GetPeriod() == 0)

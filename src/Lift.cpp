@@ -17,6 +17,7 @@ private:
 		double lift1Pos;//Position setting
 		double lift2Pos;
 		double lift3Pos;
+		double setDistance;
 
 		double P;
 		double I;
@@ -39,6 +40,7 @@ private:
 		Joystick *manControl;//manual control
 		Joystick *driveControl;
 		Joystick *driveControl2;
+		SmartDashboard *smartDashboard;
 
 		/*bool openClawButton;
 		bool closeClawButton;
@@ -47,6 +49,7 @@ private:
 		unsigned char autoPhase;
 		double autoStart;
 		double pulsesPerDistance;//in inches
+		double encoderStartTime;
 
 public:
 	Lift() : Spyder::Subsystem("Lift")
@@ -62,30 +65,35 @@ public:
 	{
 		pulsesPerDistance = 1024/(2.873 * 3.14);//C = pitch diameter * pi
 
-		Spyder::ConfigVar<double> firstLiftPosVal("liftPos1DistanceVal", 0);//Configure lift distances
-		Spyder::ConfigVar<double> secondLiftPosVal("liftPos2DistanceVal", 12);//Height of tote = 12 inches
-		Spyder::ConfigVar<double> thirdLiftPosVal("liftPos3DistanceVal", 24);
-		lift1Pos = firstLiftPosVal.GetVal();
-		lift2Pos = secondLiftPosVal.GetVal();
-		lift3Pos = thirdLiftPosVal.GetVal();
+		Spyder::ConfigVar<double> firstLiftPosVal("liftPos1DistanceVal", 10);//Configure lift distances
+		Spyder::ConfigVar<double> secondLiftPosVal("liftPos2DistanceVal", 20);//Height of tote = 12 inches
+		Spyder::ConfigVar<double> thirdLiftPosVal("liftPos3DistanceVal", -20);
+		//lift1Pos = firstLiftPosVal.GetVal();
+		//lift2Pos = secondLiftPosVal.GetVal();
+		//lift3Pos = thirdLiftPosVal.GetVal();
 
-		Spyder::ConfigVar<float> P_Val("P_ValueForLiftPID", 0.3);//Set PID Values
-		Spyder::ConfigVar<float> I_Val("I_ValueForLiftPID", 0.0);
-		Spyder::ConfigVar<float> D_Val("D_ValueForLiftPID", 0.0);
+		lift1Pos = 10;
+		lift2Pos = 20;
+		lift3Pos = -20;
 
-		P = P_Val.GetVal();
-		I = I_Val.GetVal();
-		D = D_Val.GetVal();
+		Spyder::ConfigVar<double> P_Val("P_ValueForLiftPID", 0.5);//Set PID Values
+		Spyder::ConfigVar<double> I_Val("I_ValueForLiftPID", 0);
+		Spyder::ConfigVar<double> D_Val("D_ValueForLiftPID", 0);
+
+		//P = P_Val.GetVal();
+		//I = I_Val.GetVal();
+		//D = D_Val.GetVal();
 
 		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 3);//Configure Lift Motor
 		liftMotor = new CANTalon(liftMotorVal.GetVal());
+		liftMotor->SetPosition(0);
 		//liftMotor->SetPID(P,I,D);
 
 		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",6);//Configure Tilt Motor
 		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
 
-		driveControl = new Joystick(2);
-		driveControl2 = new Joystick(0);
+		driveControl = new Joystick(0);
+		driveControl2 = new Joystick(2);
 
 		pdp = new PowerDistributionPanel();//Configure PDP
 
@@ -118,6 +126,8 @@ public:
 		case Spyder::M_DISABLED:
 			break;
 		case Spyder::M_TELEOP:
+			clock_gettime(CLOCK_REALTIME, &tp);
+			encoderStartTime = (double) tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			break;
 
 		default:
@@ -133,14 +143,15 @@ public:
 		lift2PosButton = Spyder::GetJoystick(secondLiftPos.GetVar(1))->GetRawButton(secondLiftPos.GetVar(2));
 		lift3PosButton = Spyder::GetJoystick(thirdLiftPos.GetVar(1))->GetRawButton(thirdLiftPos.GetVar(2));
 
-		//P = (driveControl2->GetRawAxis(3)+1)/2;
-		//I = (driveControl->GetRawAxis(2)+1)/2;
-		//D = (driveControl->GetRawAxis(4)+1)/2;
+		P = (driveControl2->GetRawAxis(3)+1)/20;
+		I = (driveControl->GetRawAxis(2)+1)/20;
+		D = (driveControl->GetRawAxis(4)+1)/20;
 
-		//std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
+		setDistance = 0.0;
+
+		std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
+
 		liftMotor->SetPID(P,I,D);
-		liftMotor->SetPosition(0);
-		liftMotor->EnableControl();
 
 		//std::cout<<"FwdLimSwitchClosed = "<<liftMotor->IsFwdLimitSwitchClosed()<<std::endl;
 		//std::cout<<"RevLimSwitchClosed = "<<liftMotor->IsRevLimitSwitchClosed()<<std::endl;
@@ -154,13 +165,9 @@ public:
 		//bool encoderTest;
 		//bool tilt = false;
 		//int encoderTestStart = 0;
+
 		float manualControl;
 		float manualTilt;
-
-		/*struct timespec tp;//Time stuff is used to ensure encoder is working
-		clock_gettime(CLOCK_REALTIME, &tp);
-		double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
-		double encoderTestTime = curTime - encoderTestStart;*/
 		//liftCurrent = pdp->GetCurrent(liftMotor->GetChannel());//Getting current draw of motor
 
 		Spyder::TwoIntConfig manualControlJoy("liftManualControlJoystickVal", 1, 3);//Setting manual control to joystick
@@ -183,7 +190,7 @@ public:
 					autoStart = curTime;
 				}
 				break;
-			case 1:
+			case 1:				liftMotor->SetControlMode(CANSpeedController::kPosition);
 				if(autoRunTime < 1)//pick box up
 				{
 					liftMotor->Set(1);
@@ -215,15 +222,52 @@ public:
 		case Spyder::M_DISABLED:
 			break;
 		case Spyder::M_TELEOP:
+		{
+			smartDashboard->PutNumber("Lift P Val", P);
+			smartDashboard->PutNumber("Lift I Val", I);
+			smartDashboard->PutNumber("Lift D Val", D);
+			smartDashboard->PutNumber("LiftSetDistance", setDistance);
+			smartDashboard->PutNumber("liftEncoderPosition", liftMotor->GetEncPosition());
+
+			/*struct timespec tp;
+			clock_gettime(CLOCK_REALTIME, &tp);
+			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
+			double encoderTestTime = curTime - encoderStartTime;
+
+			if(encoderTestTime <= 0.5)
+			{
+				encoderTestStart = liftMotor->GetEncPosition();
+			}
+			else if(encoderTestTime > 3)
+			{
+				if(encoderTestStart != liftMotor->GetEncPosition())
+				{
+					encoderTest = true;
+					std::cout<<"Encodertest = "<<encoderTest<<std::endl;
+				}
+				else
+				{
+					encoderTest = false;
+					std::cout<<"Encodertest = "<<encoderTest<<std::endl;
+				}
+				encoderStartTime = curTime;
+			}*/
+
 
 			manualControl = manControl->GetRawAxis(manualControlJoy.GetVar(2));
 			manualTilt = manControl->GetRawAxis(manualControlJoy.GetVar(1));
 			manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone
 			manualTilt = fabs(manualTilt) > Spyder::GetDeadzone() ? manualTilt : 0;
 
-			liftMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
-			tiltMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
-			//std::cout<<liftMotor->GetEncPosition()<<std::endl;
+
+			//liftMotor->EnableControl();
+			tiltMotor->SetControlMode(CANSpeedController::kPosition);
+
+			std::cout<<"liftEncoderVelocity = "<<liftMotor->GetEncVel()<<std::endl;
+			std::cout<<"liftEncoderPosition = "<<liftMotor->GetEncPosition()<<std::endl;
+
+			//std::cout<<"liftPos1Button = " << lift1PosButton<<std::endl;
+
 			if(fabs(manualTilt) > 0 && tiltMotor->Get() <= 1024/2)
 			{
 				tiltMotor->Set(manualTilt/2);
@@ -232,11 +276,35 @@ public:
 			{
 				tiltMotor->Set(0);
 			}
-
-			if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
+			if(!manContButton)
 			{
-				liftMotor->Set(4);
+				liftMotor->SetControlMode(CANSpeedController::kPosition);
+				if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
+				{
+					liftMotor->Set(lift1Pos);
+					std::cout<<"LiftMotorGet() = "<<liftMotor->Get()<<std::endl;
+					setDistance = lift1Pos;
+				}
+				if(lift2PosButton)//Basic PID control for lift. Does not account for different values of totes.
+				{
+					liftMotor->Set(lift2Pos);
+					std::cout<<"LiftMotorGet() = "<<liftMotor->Get()<<std::endl;
+					setDistance = lift2Pos;
+				}
+				if(lift3PosButton)//Basic PID control for lift. Does not account for different values of totes.
+				{
+					liftMotor->Set(lift3Pos);
+					std::cout<<"LiftMotorGet() = "<<liftMotor->Get()<<std::endl;
+					setDistance = lift3Pos;
+				}
 			}
+			else
+			{
+				liftMotor->SetControlMode(CANSpeedController::kPercentVbus);
+				liftMotor->Set(manualControl);
+			}
+
+
 
 			//liftMotor->Set(manualControl);
 
@@ -393,6 +461,7 @@ public:
 
 			}*/
 			break;
+		}
 		default:
 			break;
 		}
