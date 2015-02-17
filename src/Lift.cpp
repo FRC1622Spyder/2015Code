@@ -69,8 +69,8 @@ public:
 		lift2Pos = secondLiftPosVal.GetVal();
 		lift3Pos = thirdLiftPosVal.GetVal();
 
-		Spyder::ConfigVar<float> P_Val("P_ValueForLiftPID", 0.1);//Set PID Values
-		Spyder::ConfigVar<float> I_Val("I_ValueForLiftPID", 0.001);
+		Spyder::ConfigVar<float> P_Val("P_ValueForLiftPID", 0.3);//Set PID Values
+		Spyder::ConfigVar<float> I_Val("I_ValueForLiftPID", 0.0);
 		Spyder::ConfigVar<float> D_Val("D_ValueForLiftPID", 0.0);
 
 		P = P_Val.GetVal();
@@ -133,9 +133,9 @@ public:
 		lift2PosButton = Spyder::GetJoystick(secondLiftPos.GetVar(1))->GetRawButton(secondLiftPos.GetVar(2));
 		lift3PosButton = Spyder::GetJoystick(thirdLiftPos.GetVar(1))->GetRawButton(thirdLiftPos.GetVar(2));
 
-		P = (driveControl2->GetRawAxis(3)+1)/2;
-		I = (driveControl->GetRawAxis(2)+1)/2;
-		D = (driveControl->GetRawAxis(4)+1)/2;
+		//P = (driveControl2->GetRawAxis(3)+1)/2;
+		//I = (driveControl->GetRawAxis(2)+1)/2;
+		//D = (driveControl->GetRawAxis(4)+1)/2;
 
 		std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
 		liftMotor->SetPID(P,I,D);
@@ -146,7 +146,7 @@ public:
 		Spyder::TwoIntConfig setManControl("setManControlButtonVal", 1, 7);
 		manContButton = Spyder::GetJoystick(setManControl.GetVar(1))->GetRawButton(setManControl.GetVar(2));
 
-		Spyder::TwoIntConfig tiltPos("tiltButtonVal", 2, 2);//Configure Tilt Buttons
+		Spyder::TwoIntConfig tiltPos("tiltButtonVal", 1, 2);//Configure Tilt Buttons
 		tiltButton = Spyder::GetJoystick(tiltPos.GetVar(1))->GetRawButton(tiltPos.GetVar(2));
 
 		//bool encoderTest;
@@ -222,6 +222,7 @@ public:
 			liftMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
 			tiltMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
 			//std::cout<<liftMotor->GetEncPosition()<<std::endl;
+			liftMotor->Set(40);
 			if(fabs(manualTilt) > 0 && tiltMotor->Get() <= 1024/2)
 			{
 				tiltMotor->Set(manualTilt/2);
@@ -231,10 +232,12 @@ public:
 				tiltMotor->Set(0);
 			}
 
-			if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
+			/*if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
 			{
-				liftMotor->Set(-2);
-			}
+				liftMotor->Set(4);
+			}*/
+
+			//liftMotor->Set(manualControl);
 
 
 			//reset lift encoder when it hits home
