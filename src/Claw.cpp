@@ -26,7 +26,9 @@ public:
 	{
 		openClawButton = false;
 		closeClawButton = false;
-		clawSol = new DoubleSolenoid (7, 0, 1);
+		Spyder::ConfigVar<uint8_t> solModule("clawSolModuleNumber", 7);
+		Spyder::TwoIntConfig solPorts("clawSolPorts", 0, 1);
+		clawSol = new DoubleSolenoid (solModule.GetVal(), solPorts.GetVar(1), solPorts.GetVar(2));
 
 		struct timespec tp;
 		switch(runmode)
@@ -48,13 +50,13 @@ public:
 
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
-		Spyder::TwoIntConfig openClaw ("openClawButtonVal", 1, 7);//Initialize the claw ports
-		Spyder::TwoIntConfig closeClaw ("closeClawButtonVal", 1, 8);
+		Spyder::TwoIntConfig openClaw ("openClawButtonVal", 1, 5);//Initialize the claw ports
+		Spyder::TwoIntConfig closeClaw ("closeClawButtonVal", 1, 6);
 
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
-		{
+		{/*
 			struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double) tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
@@ -91,7 +93,7 @@ public:
 			default:
 				break;
 			}
-
+*/
 			break;
 		}
 		case Spyder::M_DISABLED:
@@ -103,17 +105,18 @@ public:
 			if(openClawButton)//Open Claw
 			{
 				clawSol->Set(DoubleSolenoid::kForward);
+				std::cout<<"OPEN_CLAW"<<std::endl;
 			}
 			else if(closeClawButton)//Close Claw
 			{
 				clawSol->Set(DoubleSolenoid::kReverse);
+				std::cout<<"CLOSE_CLAW"<<std::endl;
 			}
 			else
 			{
 				clawSol->Set(DoubleSolenoid::kOff);
 			}
 			break;
-
 		default:
 			break;
 		}

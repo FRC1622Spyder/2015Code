@@ -1,3 +1,4 @@
+/*
 #include "subsystem.h"
 #include "Config.h"
 #include "WPIObjMgr.h"
@@ -23,10 +24,14 @@ private:
 	float driveX;
 	float driveY;
 	float twist;
+	float rampVal;
 
 	float xVel;
 	float yVel;
 	float twistVel;
+	float curveX;
+	float curveY;
+	float curveT;
 
 	double autoStart;
 	unsigned char autoPhase;
@@ -47,12 +52,14 @@ public:
 		Spyder::ConfigVar<int> rightFrontCAN("driveRightFrontCAN_id", 2);
 		Spyder::ConfigVar<int> leftBackCAN("driveLeftBackCAN_id", 4);
 		Spyder::ConfigVar<int> rightBackCAN("driveRightBackCAN_id", 1);
-
+		Spyder::ConfigVar<float> accelRamp("driveAccelRampVal", 0.02);
 
 		frontLeftMotor = new CANTalon(leftFrontCAN.GetVal());
 		frontRightMotor = new CANTalon(rightFrontCAN.GetVal());
 		backLeftMotor = new CANTalon(leftBackCAN.GetVal());
 		backRightMotor = new CANTalon(rightBackCAN.GetVal());
+
+		rampVal = accelRamp.GetVal();
 
 		m_robotDrive = new RobotDrive(frontLeftMotor,backLeftMotor,frontRightMotor,backRightMotor);//Configure mecanum drive
 
@@ -67,6 +74,9 @@ public:
 		driveX = 0.0f;//Store input of joystick to set speed of motors
 		driveY = 0.0f;
 		twist = 0.0f;
+		curveX = 0.0f;
+		curveY = 0.0f;
+		curveT = 0.0f;
 
 		xVel = 0.0f;
 		yVel = 0.0f;
@@ -92,7 +102,7 @@ public:
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
 		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 1);
-		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 3);
+		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 2);
 		Spyder::TwoIntConfig twistSenseJoy("twistSensitivitySliderBind", 0, 4);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
@@ -100,7 +110,7 @@ public:
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
-		{
+		{/*
 			struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
@@ -120,7 +130,29 @@ public:
 				}
 				break;
 			case 1:
-				if (autoRunTime > 7)//after 3.5 seconds of driving, stop
+				if (autoRunTime > 3.5)//after 3.5 seconds of driving, stop (7 sec total)
+				{
+					frontLeftMotor->Set(0);
+					backLeftMotor->Set(0);
+					frontRightMotor->Set(0);
+					backRightMotor->Set(0);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 2:
+				if (autoRunTime > 5)//after 5 seconds, drive back (12 sec total)
+				{
+					frontLeftMotor->Set(-0.5);
+					backLeftMotor->Set(-0.5);
+					frontRightMotor->Set(-0.5);
+					backRightMotor->Set(-0.5);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 3:
+				if(autoRunTime > 1)//after 1 sec, stop (13 sec total)
 				{
 					frontLeftMotor->Set(0);
 					backLeftMotor->Set(0);
@@ -143,6 +175,11 @@ public:
 			driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));//Setting axis of joystick
 			twist = driveStick->GetTwist();
 
+			std::cout<<frontLeftMotor->GetEncPosition()<<std::endl;
+			std::cout<<backLeftMotor->GetEncPosition()<<std::endl;
+			std::cout<<frontRightMotor->GetEncPosition()<<std::endl;
+			std::cout<<backRightMotor->GetEncPosition()<<std::endl;
+
 			setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
 			twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
 			//twistSense = driveStick->GetRawAxis(3);
@@ -162,59 +199,63 @@ public:
 			curveT = -twist;*/
 
 
-			/*if(curveY < driveY -.05)//I really should replace this with an array and a for loop or something
+			/*if(yVel < driveY -.05)//BREAKS ROBOT DRIVE NEEDS FIX
 			{
-				curveY += rampVal;
+				yVel += rampVal;
 			}
-			else if(curveY > driveY +.05)
+			else if(yVel > driveY +.05)
 			{
-				curveY -= rampVal;
-			}
-			else
-			{
-				curveY = driveY;
-			}
-
-			if(curveX < driveX - .05)
-			{
-				curveX += rampVal;
-			}
-			else if(curveX > driveX + .05)
-			{
-				curveX -= rampVal;
+				yVel -= rampVal;
 			}
 			else
 			{
-				curveX = driveX;
+				yVel = driveY;
 			}
 
-			if(curveT < twist - .05)
+			if(xVel < driveX - .05)
 			{
-				curveT += rampVal;
+				xVel += rampVal;
 			}
-			else if(curveT > twist + .05)
+			else if(xVel > driveX + .05)
 			{
-				curveT -= rampVal;
+				xVel -= rampVal;
 			}
 			else
 			{
-				curveT = twist;
-			}*/
+				xVel = driveX;
+			}
 
-			xVel = -driveX;//setting values to correct orientation
+			if(twistVel < twist - .05)
+			{
+				twistVel += rampVal;
+			}
+			else if(twistVel > twist + .05)
+			{
+				twistVel -= rampVal;
+			}
+			else
+			{
+				twistVel = twist;
+			}
+
+			curveX = -driveX;
+			curveY = -driveY;
+			curveT = -twist;
+
+			/*xVel = -driveX;//setting values to correct orientation
 			yVel = -driveY;
 			twistVel = -twist * zMultiplier;
-			/*if(-twist > 0)//Should give twist more control
+			if(-twist > 0)//Should give twist more control
 			{
 				twistVel = -twist - Spyder::GetDeadzone();
 			}
 			else if(-twist < 0)
 			{
 				twistVel = -twist + Spyder::GetDeadzone();
-			}*/
+			}
 
 
-			m_robotDrive->MecanumDrive_Cartesian(xVel, yVel, twistVel);//setting mecanum drive with curved values
+			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);//setting mecanum drive with curved values
 			break;
 		}
 		default:
@@ -229,3 +270,4 @@ public:
 
 Drive drive;
 
+*/
