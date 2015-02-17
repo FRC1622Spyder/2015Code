@@ -137,11 +137,13 @@ public:
 		//I = (driveControl->GetRawAxis(2)+1)/2;
 		//D = (driveControl->GetRawAxis(4)+1)/2;
 
-		std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
+		//std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
 		liftMotor->SetPID(P,I,D);
+		liftMotor->SetPosition(0);
+		liftMotor->EnableControl();
 
-		std::cout<<"FwdLimSwitchClosed = "<<liftMotor->IsFwdLimitSwitchClosed()<<std::endl;
-		std::cout<<"RevLimSwitchClosed = "<<liftMotor->IsRevLimitSwitchClosed()<<std::endl;
+		//std::cout<<"FwdLimSwitchClosed = "<<liftMotor->IsFwdLimitSwitchClosed()<<std::endl;
+		//std::cout<<"RevLimSwitchClosed = "<<liftMotor->IsRevLimitSwitchClosed()<<std::endl;
 
 		Spyder::TwoIntConfig setManControl("setManControlButtonVal", 1, 7);
 		manContButton = Spyder::GetJoystick(setManControl.GetVar(1))->GetRawButton(setManControl.GetVar(2));
@@ -222,7 +224,6 @@ public:
 			liftMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
 			tiltMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
 			//std::cout<<liftMotor->GetEncPosition()<<std::endl;
-			liftMotor->Set(40);
 			if(fabs(manualTilt) > 0 && tiltMotor->Get() <= 1024/2)
 			{
 				tiltMotor->Set(manualTilt/2);
@@ -232,19 +233,18 @@ public:
 				tiltMotor->Set(0);
 			}
 
-			/*if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
+			if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
 			{
 				liftMotor->Set(4);
-			}*/
+			}
 
 			//liftMotor->Set(manualControl);
 
 
 			//reset lift encoder when it hits home
-			/*if(liftMotor->)
+			/*if(liftMotor->isFwdLimitSwitchClosed())
 			{
 				liftMotor->SetPosition(0);
-				//liftEncoder->Reset();
 			}*/
 
 

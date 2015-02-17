@@ -1,4 +1,4 @@
-/*
+
 #include "subsystem.h"
 #include "Config.h"
 #include "WPIObjMgr.h"
@@ -101,16 +101,18 @@ public:
 
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
-		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 1);
+		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 0);
+		Spyder::ConfigVar<uint32_t> yJoystick("yJoyBind",1);
+		Spyder::ConfigVar<uint32_t> zJoystick("twistJoyBind", 3);
 		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 2);
 		Spyder::TwoIntConfig twistSenseJoy("twistSensitivitySliderBind", 0, 4);
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
-		driveStick->SetAxisChannel(Joystick::kTwistAxis, 3);
+		driveStick->SetAxisChannel(Joystick::kTwistAxis, zJoystick.GetVal());
 
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
-		{/*
+		{
 			struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
@@ -171,14 +173,14 @@ public:
 
 		case Spyder::M_TELEOP:
 		{
-			driveX = driveStick->GetRawAxis(rightJoystick.GetVar(1));
-			driveY = driveStick->GetRawAxis(rightJoystick.GetVar(2));//Setting axis of joystick
+			driveX = driveStick->GetRawAxis(rightJoystick.GetVar(2));
+			driveY = driveStick->GetRawAxis(yJoystick.GetVal());//Setting axis of joystick
 			twist = driveStick->GetTwist();
 
-			std::cout<<frontLeftMotor->GetEncPosition()<<std::endl;
+			/*std::cout<<frontLeftMotor->GetEncPosition()<<std::endl;
 			std::cout<<backLeftMotor->GetEncPosition()<<std::endl;
 			std::cout<<frontRightMotor->GetEncPosition()<<std::endl;
-			std::cout<<backRightMotor->GetEncPosition()<<std::endl;
+			std::cout<<backRightMotor->GetEncPosition()<<std::endl;*/
 
 			setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
 			twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
@@ -194,53 +196,49 @@ public:
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
-			/*curveX = -driveX;//To fix the robot moving in the opposite direction
+			curveX = -driveX;//To fix the robot moving in the opposite direction
 			curveY = -driveY;
-			curveT = -twist;*/
+			curveT = -twist * zMultiplier;;
 
 
-			/*if(yVel < driveY -.05)//BREAKS ROBOT DRIVE NEEDS FIX
+			if(yVel < curveY)//RAMP FUCKING WORKS
 			{
 				yVel += rampVal;
 			}
-			else if(yVel > driveY +.05)
+			else if(yVel > curveY)
 			{
 				yVel -= rampVal;
 			}
 			else
 			{
-				yVel = driveY;
+				yVel = curveY;
 			}
 
-			if(xVel < driveX - .05)
+			if(xVel < curveX)
 			{
 				xVel += rampVal;
 			}
-			else if(xVel > driveX + .05)
+			else if(xVel > curveX)
 			{
 				xVel -= rampVal;
 			}
 			else
 			{
-				xVel = driveX;
+				xVel = curveX;
 			}
 
-			if(twistVel < twist - .05)
+			if(twistVel < curveT)
 			{
 				twistVel += rampVal;
 			}
-			else if(twistVel > twist + .05)
+			else if(twistVel > curveT)
 			{
 				twistVel -= rampVal;
 			}
 			else
 			{
-				twistVel = twist;
+				twistVel = curveT;
 			}
-
-			curveX = -driveX;
-			curveY = -driveY;
-			curveT = -twist;
 
 			/*xVel = -driveX;//setting values to correct orientation
 			yVel = -driveY;
@@ -252,10 +250,13 @@ public:
 			else if(-twist < 0)
 			{
 				twistVel = -twist + Spyder::GetDeadzone();
-			}
+			}*/
+
+			std::cout<<"BackRightMotorSetting = "<<backRightMotor->Get()<<std::endl;
+			std::cout<<"FrontRightMotorSetting = "<<frontRightMotor->Get()<<std::endl;
 
 
-			m_robotDrive->MecanumDrive_Cartesian(curveX, curveY, curveT);//setting mecanum drive with curved values
+			m_robotDrive->MecanumDrive_Cartesian(xVel, yVel, twistVel);//setting mecanum drive with curved values
 			break;
 		}
 		default:
@@ -270,4 +271,4 @@ public:
 
 Drive drive;
 
-*/
+
