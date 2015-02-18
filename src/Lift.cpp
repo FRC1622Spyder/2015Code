@@ -42,10 +42,6 @@ private:
 		Joystick *driveControl2;
 		SmartDashboard *smartDashboard;
 
-		/*bool openClawButton;
-		bool closeClawButton;
-		DoubleSolenoid *clawSol;*/
-
 		unsigned char autoPhase;
 		double autoStart;
 		double pulsesPerDistance;//in inches
@@ -87,7 +83,6 @@ public:
 		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 3);//Configure Lift Motor
 		liftMotor = new CANTalon(liftMotorVal.GetVal());
 		liftMotor->SetPosition(0);
-		//liftMotor->SetPID(P,I,D);
 
 		Spyder::ConfigVar<int> tiltMotorVal ("tiltMotorCAN_id",6);//Configure Tilt Motor
 		tiltMotor = new CANTalon(tiltMotorVal.GetVal());
@@ -96,8 +91,6 @@ public:
 		driveControl2 = new Joystick(2);
 
 		pdp = new PowerDistributionPanel();//Configure PDP
-
-
 
 		//Initialize current draw readings + values that need to be checked against readings
 		/*Spyder::ConfigVar<float> oneToteCurVal("oneToteCurrentDraw", 1);//Configure current draws for number of totes being carried
@@ -136,25 +129,18 @@ public:
 	}
 	virtual void Periodic(Spyder::RunModes runmode)
 	{
-		Spyder::TwoIntConfig firstLiftPos("liftPos1ButtonVal", 1, 1);//Configure Lift Buttons
+		Spyder::TwoIntConfig firstLiftPos("liftPos1ButtonVal", 1, 1);//Configure Lift Buttons (DOES NOT WORK)
 		Spyder::TwoIntConfig secondLiftPos("liftPos2ButtonVal", 1, 4);
 		Spyder::TwoIntConfig thirdLiftPos("liftPos3ButtonVal", 1, 3);
 		lift1PosButton = Spyder::GetJoystick(firstLiftPos.GetVar(1))->GetRawButton(firstLiftPos.GetVar(2));
 		lift2PosButton = Spyder::GetJoystick(secondLiftPos.GetVar(1))->GetRawButton(secondLiftPos.GetVar(2));
 		lift3PosButton = Spyder::GetJoystick(thirdLiftPos.GetVar(1))->GetRawButton(thirdLiftPos.GetVar(2));
-
-		P = (driveControl2->GetRawAxis(3)+1)/20;
-		I = (driveControl->GetRawAxis(2)+1)/20;
-		D = (driveControl->GetRawAxis(4)+1)/20;
+		//P = (driveControl2->GetRawAxis(3)+1)/20;
+		//I = (driveControl->GetRawAxis(2)+1)/20;
+		//D = (driveControl->GetRawAxis(4)+1)/20;
 
 		setDistance = 0.0;
-
-		std::cout<<"PIDvals = "<<P<<", "<<I<<", "<<D<<std::endl;
-
-		liftMotor->SetPID(P,I,D);
-
-		//std::cout<<"FwdLimSwitchClosed = "<<liftMotor->IsFwdLimitSwitchClosed()<<std::endl;
-		//std::cout<<"RevLimSwitchClosed = "<<liftMotor->IsRevLimitSwitchClosed()<<std::endl;
+		//liftMotor->SetPID(P,I,D);
 
 		Spyder::TwoIntConfig setManControl("setManControlButtonVal", 1, 7);
 		manContButton = Spyder::GetJoystick(setManControl.GetVar(1))->GetRawButton(setManControl.GetVar(2));
@@ -176,8 +162,8 @@ public:
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
-		{/*
-			struct timespec tp;
+		{
+			/*struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			double autoRunTime = curTime - autoStart;
@@ -259,24 +245,9 @@ public:
 			manualControl = fabs(manualControl) > Spyder::GetDeadzone() ? manualControl : 0;//Manual Control deadzone
 			manualTilt = fabs(manualTilt) > Spyder::GetDeadzone() ? manualTilt : 0;
 
-
-			//liftMotor->EnableControl();
-			tiltMotor->SetControlMode(CANSpeedController::kPosition);
-
-			std::cout<<"liftEncoderVelocity = "<<liftMotor->GetEncVel()<<std::endl;
-			std::cout<<"liftEncoderPosition = "<<liftMotor->GetEncPosition()<<std::endl;
-
-			//std::cout<<"liftPos1Button = " << lift1PosButton<<std::endl;
-
-			if(fabs(manualTilt) > 0 && tiltMotor->Get() <= 1024/2)
-			{
-				tiltMotor->Set(manualTilt/2);
-			}
-			else
-			{
-				tiltMotor->Set(0);
-			}
-			if(!manContButton)
+			tiltMotor->Set(manualTilt/3);
+			liftMotor->Set(manualControl);
+			/*if(!manContButton)
 			{
 				liftMotor->SetControlMode(CANSpeedController::kPosition);
 				if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
@@ -302,43 +273,13 @@ public:
 			{
 				liftMotor->SetControlMode(CANSpeedController::kPercentVbus);
 				liftMotor->Set(manualControl);
-			}
-
-
-
-			//liftMotor->Set(manualControl);
-
+			}*/
 
 			//reset lift encoder when it hits home
 			/*if(liftMotor->isFwdLimitSwitchClosed())
 			{
 				liftMotor->SetPosition(0);
 			}*/
-
-
-
-		/*	if(!manControl)
-			{
-				liftMotor->SetControlMode(CANSpeedController::ControlMode::kPosition);
-				if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
-				{
-					liftMotor->Set(36*pulsesPerDistance);
-				}
-				else if(lift2PosButton)
-				{
-					liftMotor->Set(lift2Pos);
-				}
-				else if(lift3PosButton)
-				{
-					liftMotor->Set(lift3Pos);
-				}
-			}
-			else
-			{
-				liftMotor->SetControlMode(CANSpeedController::ControlMode::kSpeed);
-				liftMotor->Set(manualControl);
-			}*/
-
 
 			/*if(encoderTestTime <= 0.5)
 			{
@@ -392,73 +333,8 @@ public:
 			else if(toteCurrentFive < liftCurrent && liftCurrent < toteCurrentSix)//totes = 5
 			{
 			}
-			else//totes = 6
+			else //totes = 6
 			{
-			}
-			if(encoderTest)//If encoder is good, use PID
-			{
-				if(lift1PosButton)//Basic PID control for lift. Does not account for different values of totes.
-				{
-					liftControl->SetSetpoint(lift1Pos);
-				}
-				if(lift2PosButton)
-				{
-					liftControl->SetSetpoint(lift2Pos);
-				}
-				if(lift3PosButton)
-				{
-					liftControl->SetSetpoint(lift3Pos);
-				}
-			}
-			else//manual control if encoder doesn't work
-			{
-				liftMotor->Set(manualControl);
-				/*if(lift1PosButton)                            //backup for the PID Controller
-				{
-					if(liftEncoder->GetDistance() == lift1Pos)
-					{
-						liftMotor->Set(0);
-					}
-					if(liftEncoder->GetDistance() > lift1Pos)
-					{
-						liftMotor->Set(-0.2);
-					}
-					if(liftEncoder->GetDistance() < lift1Pos)
-					{
-						liftMotor->Set(0.2);
-					}
-				}
-				if(lift2PosButton)
-				{
-					if(liftEncoder->GetDistance() == lift2Pos)
-					{
-						liftMotor->Set(0);
-					}
-					if(liftEncoder->GetDistance() < lift2Pos)
-					{
-						liftMotor->Set(0.2);
-					}
-					if(liftEncoder->GetDistance() > lift2Pos)
-					{
-						liftMotor->Set(-0.2);
-					}
-				}
-				if(lift3PosButton)
-				{
-					if(liftEncoder->GetDistance() == lift3Pos)
-					{
-						liftMotor->Set(0);
-					}
-					if(liftEncoder->GetDistance() < lift3Pos)
-					{
-						liftMotor->Set(0.2);
-					}
-					if(liftEncoder->GetDistance() > lift3Pos)
-					{
-						liftMotor->Set(-0.2);
-					}
-				}
-
 			}*/
 			break;
 		}

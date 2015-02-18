@@ -13,8 +13,9 @@ private:
 	DoubleSolenoid *clawSol;
 	unsigned char autoPhase;
 	double autoStart;
+	int init;
 public:
-	Claw() : Spyder::Subsystem("Claw")
+	Claw() : Spyder::Subsystem("Claw"),init(0)
 	{
 	}
 
@@ -28,7 +29,11 @@ public:
 		closeClawButton = false;
 		Spyder::ConfigVar<uint8_t> solModule("clawSolModuleNumber", 7);
 		Spyder::TwoIntConfig solPorts("clawSolPorts", 0, 1);
-		clawSol = new DoubleSolenoid (solModule.GetVal(), solPorts.GetVar(1), solPorts.GetVar(2));
+		if(init == 0)
+		{
+			clawSol = new DoubleSolenoid (solModule.GetVal(), solPorts.GetVar(1), solPorts.GetVar(2));
+		}
+		init++;
 
 		struct timespec tp;
 		switch(runmode)
@@ -56,8 +61,8 @@ public:
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
-		{/*
-			struct timespec tp;
+		{
+			/*struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double) tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			double autoRunTime = curTime - autoStart;
@@ -92,8 +97,7 @@ public:
 				break;
 			default:
 				break;
-			}
-*/
+			}*/
 			break;
 		}
 		case Spyder::M_DISABLED:

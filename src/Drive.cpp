@@ -15,6 +15,7 @@ private:
 	CANTalon *frontRightMotor;
 	CANTalon *backLeftMotor;
 	CANTalon *backRightMotor;
+	SmartDashboard *driveDash;
 	//Accelerometer *accel;
 
 	float twistSense;
@@ -25,6 +26,7 @@ private:
 	float driveY;
 	float twist;
 	float rampVal;
+	float accelRamp;
 
 	float xVel;
 	float yVel;
@@ -52,14 +54,11 @@ public:
 		Spyder::ConfigVar<int> rightFrontCAN("driveRightFrontCAN_id", 2);
 		Spyder::ConfigVar<int> leftBackCAN("driveLeftBackCAN_id", 4);
 		Spyder::ConfigVar<int> rightBackCAN("driveRightBackCAN_id", 1);
-		Spyder::ConfigVar<float> accelRamp("driveAccelRampVal", 0.02);
 
 		frontLeftMotor = new CANTalon(leftFrontCAN.GetVal());
 		frontRightMotor = new CANTalon(rightFrontCAN.GetVal());
 		backLeftMotor = new CANTalon(leftBackCAN.GetVal());
 		backRightMotor = new CANTalon(rightBackCAN.GetVal());
-
-		rampVal = accelRamp.GetVal();
 
 		m_robotDrive = new RobotDrive(frontLeftMotor,backLeftMotor,frontRightMotor,backRightMotor);//Configure mecanum drive
 
@@ -70,6 +69,9 @@ public:
 		twistSense = 0.0f;
 		zMultiplier = 1.0f;
 		setTwistSense = false;
+
+		accelRamp = 0.01f;
+		rampVal = 0.01f;
 
 		driveX = 0.0f;//Store input of joystick to set speed of motors
 		driveY = 0.0f;
@@ -106,14 +108,22 @@ public:
 		Spyder::ConfigVar<uint32_t> zJoystick("twistJoyBind", 3);
 		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 2);
 		Spyder::TwoIntConfig twistSenseJoy("twistSensitivitySliderBind", 0, 4);
+		Spyder::TwoIntConfig accelRampJoy("accelRampSliderBind", 0, 2);
+
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, zJoystick.GetVal());
+		setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
+		twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
+		accelRamp = Spyder::GetJoystick(accelRampJoy.GetVar(1))->GetRawAxis(accelRampJoy.GetVar(2));
+
+		driveDash->PutNumber("twistMultiplier = ", zMultiplier);
+		driveDash->PutNumber("accelRampVal = ",rampVal);
 
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
 		{
-			struct timespec tp;
+			/*struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			double autoRunTime = curTime - autoStart;
@@ -123,10 +133,10 @@ public:
 			case 0:
 				if(autoRunTime >= 3.5)//after 3.5 seconds, drive forward
 				{
-					frontLeftMotor->Set(-0.5);
-					backLeftMotor->Set(-0.5);
-					frontRightMotor->Set(0.5);
-					backRightMotor->Set(0.5);
+					frontLeftMotor->Set(0.5);
+					backLeftMotor->Set(0.5);
+					frontRightMotor->Set(-0.5);
+					backRightMotor->Set(-0.5);
 					++autoPhase;
 					autoStart = curTime;
 				}
@@ -147,8 +157,8 @@ public:
 				{
 					frontLeftMotor->Set(-0.5);
 					backLeftMotor->Set(-0.5);
-					frontRightMotor->Set(-0.5);
-					backRightMotor->Set(-0.5);
+					frontRightMotor->Set(0.5);
+					backRightMotor->Set(0.5);
 					++autoPhase;
 					autoStart = curTime;
 				}
@@ -164,7 +174,7 @@ public:
 				break;
 			default:
 				break;
-			}
+			}*/
 			break;
 		}
 
@@ -177,26 +187,25 @@ public:
 			driveY = driveStick->GetRawAxis(yJoystick.GetVal());//Setting axis of joystick
 			twist = driveStick->GetTwist();
 
-			setTwistSense = Spyder::GetJoystick(senseButton.GetVar(1))->GetRawButton(senseButton.GetVar(2));//Twist sensitivity settings!
-			twistSense = Spyder::GetJoystick(twistSenseJoy.GetVar(1))->GetRawAxis(twistSenseJoy.GetVar(2));
-			//twistSense = driveStick->GetRawAxis(3);
-
 			if(setTwistSense)
 			{
+				rampVal = (accelRamp+1)/20;
 				zMultiplier = (twistSense+1)/2;
 			}
-
 
 			driveX = fabs(driveX) > Spyder::GetDeadzone() ? driveX : 0;//Set proper deadzone;
 			driveY = fabs(driveY) > Spyder::GetDeadzone() ? driveY : 0;
 			twist = fabs(twist) > Spyder::GetDeadzone() ? twist : 0;
 
-			curveX = -driveX;//To fix the robot moving in the opposite direction
-			curveY = -driveY;
-			curveT = -twist * zMultiplier;;
+			//curveX = -driveX;//To fix the robot moving in the opposite direction
+			//curveY = -driveY;
+			//curveT = -twist * zMultiplier;
 
+			xVel = -driveX;
+			yVel = -driveY;
+			twistVel = -twist*zMultiplier;
 
-			if(yVel < curveY)//RAMP FUCKING WORKS
+			/*if(yVel < curveY)//nope
 			{
 				yVel += rampVal;
 			}
@@ -233,7 +242,7 @@ public:
 			else
 			{
 				twistVel = curveT;
-			}
+			}*/
 
 			m_robotDrive->MecanumDrive_Cartesian(xVel, yVel, twistVel);//setting mecanum drive with curved values
 			break;

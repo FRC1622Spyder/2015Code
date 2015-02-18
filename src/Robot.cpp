@@ -8,6 +8,7 @@ class Robot: public IterativeRobot
 {
 private:
 	LiveWindow *lw;
+	CameraServer *cameraServer;
 	//SmartDashboard *smartDashboard;
 	//Spyder::RGBStrip *ledStrip;
 	unsigned int usPeriodCounter;
@@ -22,6 +23,8 @@ public:
 		//ledStrip->SetColor(10, 10, 10);
 
 		lw = LiveWindow::GetInstance();
+		cameraServer = CameraServer::GetInstance();
+		cameraServer->StartAutomaticCapture();
 
 
 		std::fstream file;
