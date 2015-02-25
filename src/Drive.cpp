@@ -123,7 +123,7 @@ public:
 		{
 		case Spyder::M_AUTO:
 		{
-			/*struct timespec tp;
+			struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			double autoRunTime = curTime - autoStart;
@@ -174,7 +174,7 @@ public:
 				break;
 			default:
 				break;
-			}*/
+			}
 			break;
 		}
 
