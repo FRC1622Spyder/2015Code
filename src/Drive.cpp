@@ -130,8 +130,101 @@ public:
 
 			switch(autoPhase)
 			{
+			//K'S AUTO MOVE RIGHT TO PUSH BIN AND TOTE AND STOP IN ZONE
 			case 0:
-				if(autoRunTime >= 3.5)//after 3.5 seconds, drive forward
+			if(autoRunTime < 1) //after start
+			{
+				frontLeftMotor-> Set(1);
+				backLeftMotor -> Set(-1);
+				frontRightMotor -> Set(1);
+				backRightMotor -> Set(-1);
+				++autoPhase;
+				autoStart = curTime;
+			}
+			break;
+
+			case 1:
+			if(autoRunTime > 3)//after .75 stop
+			{
+				frontLeftMotor -> Set(0);
+				backLeftMotor -> Set(0);
+				frontRightMotor -> Set(0);
+				backRightMotor -> Set(0);
+			}
+			break;
+			//K"S AUTO 1 STACK BIN ON TOTE AND THEN TAKE BOTH FORWARD
+			/*case 0:
+			 if(autoRunTime > 3)// after 3 start moving left
+			 {
+			  frontLeftMotor -> Set(0.5);
+			  backLeftMotor -> Set(-0.5);
+			  frontRightMotor -> Set(0.5);
+			  backRightMotor -> Set(-0.5);
+			  ++autoPhase;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case 1:
+			  if(autoRunTime > 1)// after 1 stop
+			  {
+			  frontLeftMotor -> Set(0);
+			  backLeftMotor -> Set(0);
+			  frontRightMotor -> Set(0);
+			  backRightMotor -> Set(0);
+			  ++autoPhase;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case 2:
+			  if(autoRunTime > 2)//after 2 drive forward
+			  {
+			  frontLeftMotor -> Set(0.5);
+			  backLeftMotor -> Set(0.5);
+			  frontRightMotor -> Set(-0.5);
+			  backRightMotor -> Set(-0.5);
+			  ++autoPhase;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case 3:
+			  if(autoRunTime > 2)//after 2 stop
+			  {
+			  frontLeftMotor -> Set(0);
+			  backLeftMotor -> Set(0);
+			  frontRightMotor -> Set(0);
+			  backRightMotor -> Set(0);
+			  ++autoPhase;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case 4:
+			  if(autoRunTime < 1)//after forward, start back
+			  {
+			  frontLeftMotor -> Set(-0.5);
+			  backLeftMotor -> Set(-0.5);
+			  frontRightMotor -> Set(0.5);
+			  backRightMotor -> Set(0.5);
+			  ++autoPhase;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case 5:
+			  if(autoRunTime > 0.5)//stop back after 0.5
+			  {
+			  frontLeftMotor -> Set(0);
+			  backLeftMotor -> Set(0);
+			  frontRightMotor -> Set(0);
+			  backRightMotor -> Set(0);
+			  }
+			  break;*/
+			//GRAB ONE TOTE
+			/*case 0:
+				if(autoRunTime >= 4.5)//after 4.5 seconds, drive forward (+3ed to get out of config)
 				{
 					frontLeftMotor->Set(0.5);
 					backLeftMotor->Set(0.5);
@@ -142,7 +235,7 @@ public:
 				}
 				break;
 			case 1:
-				if (autoRunTime > 3.5)//after 3.5 seconds of driving, stop (7 sec total)
+				if (autoRunTime > 2.5)//after 2.5 seconds of driving, stop (+0.5ed to drive from config spot)
 				{
 					frontLeftMotor->Set(0);
 					backLeftMotor->Set(0);
@@ -153,7 +246,7 @@ public:
 				}
 				break;
 			case 2:
-				if (autoRunTime > 5)//after 5 seconds, drive back (12 sec total)
+				if (autoRunTime > 2)//after 2 seconds, drive back (9 sec total)
 				{
 					frontLeftMotor->Set(-0.5);
 					backLeftMotor->Set(-0.5);
@@ -164,14 +257,14 @@ public:
 				}
 				break;
 			case 3:
-				if(autoRunTime > 1)//after 1 sec, stop (13 sec total)
+				if(autoRunTime > 0.5)//after 0.5 sec, stop (9.5 sec total)
 				{
 					frontLeftMotor->Set(0);
 					backLeftMotor->Set(0);
 					frontRightMotor->Set(0);
 					backRightMotor->Set(0);
 				}
-				break;
+				break;*/
 			default:
 				break;
 			}

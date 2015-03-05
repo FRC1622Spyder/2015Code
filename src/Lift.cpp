@@ -167,9 +167,125 @@ public:
 			clock_gettime(CLOCK_REALTIME, &tp);
 			double curTime = (double)tp.tv_sec + double(double(tp.tv_nsec)*1e-9);
 			double autoRunTime = curTime - autoStart;
+			/*DEAR THE NAMER OF APOS, THE COMMUNIST OVERLORD,
+			 * YOUR CODE IS APOS
+			 * THE FOLLOWING IS A MESSAGE FROM THE NAVAJO TACO OVERLORD 50000.
+			 *  YOUR CODE IS CRAP! I MEAN LIKE TOTAL CRAP LITERALLY, MAN.
+			 * LIKE THIS CODE CAME OUT OF THE BACK END OF A CONSTIPATED, HOMOCIDAL BULL WHO
+			 * SPENT THE LAST TWELVE WEEKS WITH A CORK STUCK UP IT'S ASS. IT'S BADDDDDDDDD.
+			 *
+			 * JK, PHILIP U DA BEST
+			 * -K			 *
+			 */
 			switch(autoPhase)
 			{
-			case 0:
+			/*case0:
+			 * if(autoRunTime < 1)//at start, raise
+			 * {
+			 * liftMotor -> Set(-1);
+			 * ++autoPhase;
+			 * autoStart = curTime;
+			 * }
+			 * break;
+			 *
+			 * case1:
+			 * if(autoRunTim > 0.5)//stop raise after 0.5
+			 * {
+			 * liftMotor -> Set(0);
+			 * ++autoPhase;
+			 * autoStart = curTime;
+			 *}
+			 *}break;
+			 *
+			 * case2:
+			 * if(autoRunTime > 1)//raise after bin grip
+			 * {
+			 * liftMotor -> Set(-1);
+			 * ++autoPhase;
+			 * autoStart = curTime;
+			 * }
+			 * break;
+			 *
+			 * case3:
+			 * if(autoRunTime > 2)//stop raise after 2
+			 * {
+			 * liftMotor -> Set(0);
+			 * ++autoPhase;
+			 * autoStart = curTime;
+			 * }
+			 * break;
+			 *
+			 * case4:
+			 * if(autoRunTime > 1)//hold for 1 while drive
+			 * {
+			 * liftMotor -> Set(0.5);
+			 * ++autoPhase;
+			 * autoStart = curTime;
+			 * }
+			 * break;
+			 *
+			 * case5:
+			 * {
+			 * if(autoRunTime > 1.5)//stop lift down after 1.5
+			 * liftMotor -> Set(0)
+			 * ++
+			 */
+			/*case 0:
+				if(autoRunTime < 1)
+				{
+					liftMotor -> Set(1);
+					tiltMotor -> Set(0.5);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 1:
+				if(autoRunTime > 1.75)stop tilt
+				{
+					tiltMotor -> Set(0);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 2: stop lift
+				if(autoRunTime > 2.625)
+				{
+					liftMotor -> Set(0);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 3:
+				if(autoRunTime > 0.5)//after 0.5
+				{
+					liftMotor -> Set(-0.5);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 4:
+				if(autoRunTime > 0.5)//after 0.5 stop
+				{
+					liftMotor -> Set(0);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 5:
+				if(autoRunTime > 1.5)//after 1.5 hold
+				{
+					liftMotor -> Set(0.5);
+					++autoPhase;
+					autoStart = curTime;
+				}
+				break;
+			case 6:
+				if(autoRunTime > 0.5)//after 0.5 stop
+				{
+					liftMotor -> Set(0);;
+				}
+				break;*/
+			/*case 0:
 				if(autoRunTime  > 1.5)//wait for claw
 				{
 					++autoPhase;
@@ -199,7 +315,7 @@ public:
 					liftMotor->Set(0);
 				}
 				break;
-			}
+			}*/
 			default:
 				break;
 			}

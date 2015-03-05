@@ -69,8 +69,41 @@ public:
 
 			switch(autoPhase)
 			{
-			case 0:
-				if(autoRunTime < 1)//Grab tote
+			//K'S AUTO 1
+			/*case 0:
+			  if(autoRunTime > 0.5) //close after 0.5
+			  {
+			  clawSol -> Set(DoubleSolenoid::kReverse);
+			  autoPhase++;
+			  autoStart = curTime;
+			  }
+			  break;
+
+			  case1:
+			  if(autoRunTime < 3.5) //after 3.5 open
+			  {
+			  clawSol -> Set(DoubleSolenoid::kForward);
+			  autoPhase++;
+			  autoStart = curTime;
+			  }
+			  break;*/
+
+			//K'S AUTO 2
+
+			/*case 0:
+				if(autoRunTime < 1)//start by
+				{
+					clawSol->Set(DoubleSolenoid::kForward);
+				}
+				else
+				{
+					clawSol->Set(DoubleSolenoid::kOff);
+					autoPhase++;
+					autoStart = curTime;
+				}
+				break;
+			case 1:
+				if(autoRunTime > 3.5)//Grab tote
 				{
 					clawSol->Set(DoubleSolenoid::kReverse);
 				}
@@ -79,13 +112,13 @@ public:
 					clawSol->Set(DoubleSolenoid::kOff);
 				}
 
-				if(autoRunTime > 20)//Wait 20 seconds
+				if(autoRunTime > 7.5)//Wait 7.5 seconds
 				{
 					autoPhase++;
 					autoStart = curTime;
 				}
 				break;
-			case 1:
+			case 2:
 				if(autoRunTime < 1)//release tote
 				{
 					clawSol->Set(DoubleSolenoid::kForward);
@@ -94,7 +127,7 @@ public:
 				{
 					clawSol->Set(DoubleSolenoid::kOff);
 				}
-				break;
+				break;*/
 			default:
 				break;
 			}
