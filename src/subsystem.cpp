@@ -1,4 +1,5 @@
 #include "subsystem.h"
+#include <iostream>
 
 namespace Spyder
 {
@@ -18,6 +19,19 @@ namespace Spyder
 	std::vector<Subsystem*>& SubsystemMgr::GetSubsystems()
 	{
 		return m_subsystems;
+	}
+
+	Subsystem* SubsystemMgr::GetSubsystem(const std::string &strName)
+	{
+		for(
+				std::vector<Subsystem*>::iterator iter = m_subsystems.begin();
+				iter != m_subsystems.end();
+				iter++)
+		{
+			if((*iter)->GetName().compare(strName) == 0) return *iter;
+			std::cout<<(*iter)->GetName()<<std::endl;
+		}
+		return NULL;
 	}
 
 	Subsystem::Subsystem(const std::string &strName) : m_strName(strName), m_usPeriod(1)

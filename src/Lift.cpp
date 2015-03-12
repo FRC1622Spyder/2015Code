@@ -4,6 +4,7 @@
 #include "WPILib.h"
 #include <iostream>
 #include <cmath>
+#include "Claw.h"
 
 class Lift : public Spyder::Subsystem
 {
@@ -13,6 +14,7 @@ private:
 		bool lift3PosButton;
 		bool tiltButton;//Tilt button setting
 		bool manContButton;
+		bool clawPos;
 
 		double lift1Pos;//Position setting
 		double lift2Pos;
@@ -71,6 +73,14 @@ public:
 		lift1Pos = 10;
 		lift2Pos = 20;
 		lift3Pos = -20;
+
+		Spyder::SubsystemMgr * mgr = Spyder::SubsystemMgr::GetSingleton();
+		Spyder::Subsystem *sub = mgr->GetSubsystem("Claw");
+		if(sub !=NULL)
+			{
+			Claw *claw = dynamic_cast<Claw*>(sub);
+		//clawPos = claw->isClawClosed();
+			}
 
 		Spyder::ConfigVar<double> P_Val("P_ValueForLiftPID", 0.5);//Set PID Values
 		Spyder::ConfigVar<double> I_Val("I_ValueForLiftPID", 0);
