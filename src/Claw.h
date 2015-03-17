@@ -13,6 +13,8 @@ class Claw : public Spyder::Subsystem
 private:
 	bool openClawButton;
 	bool closeClawButton;
+	bool autoStackButton;
+	int autoStackProcedure;
 	bool clawPosition;
 	DoubleSolenoid *clawSol;
 	unsigned char autoPhase;
@@ -23,6 +25,7 @@ public:
 	{
 		return clawPosition;
 	}
+
 	Claw() : Spyder::Subsystem("Claw"),init(0)
 	{
 	}
@@ -35,6 +38,8 @@ public:
 	{
 		openClawButton = false;
 		closeClawButton = false;
+		autoStackButton = false;
+		autoStackProcedure = 1;
 		Spyder::ConfigVar<uint8_t> solModule("clawSolModuleNumber", 7);
 		Spyder::TwoIntConfig solPorts("clawSolPorts", 0, 1);
 		if(init == 0)
@@ -65,6 +70,7 @@ public:
 	{
 		Spyder::TwoIntConfig openClaw ("openClawButtonVal", 1, 5);//Initialize the claw ports
 		Spyder::TwoIntConfig closeClaw ("closeClawButtonVal", 1, 6);
+		Spyder::TwoIntConfig autoStack ("clawAutoStackButton", 1, 2);
 
 		switch(runmode)
 		{
@@ -146,6 +152,7 @@ public:
 		case Spyder::M_TELEOP:
 			openClawButton = Spyder::GetJoystick(openClaw.GetVar(1))->GetRawButton(openClaw.GetVar(2));//Get Button Vals
 			closeClawButton = Spyder::GetJoystick(closeClaw.GetVar(1))->GetRawButton(closeClaw.GetVar(2));
+			autoStackButton = Spyder::GetJoystick(autoStack.GetVar(1))->GetRawButton(autoStack.GetVar(2));
 
 			if(openClawButton)//Open Claw
 			{
@@ -158,6 +165,24 @@ public:
 				clawSol->Set(DoubleSolenoid::kReverse);
 				std::cout<<"CLOSE_CLAW"<<std::endl;
 				clawPosition = true;
+			}
+			else
+			{
+				clawSol->Set(DoubleSolenoid::kOff);
+			}
+
+			if(autoStackButton)
+			{
+				if(autoStackProcedure%2)//if returns 1 then close claw
+				{
+					clawSol->Set(DoubleSolenoid::kReverse);
+					clawPosition = true;
+				}
+				else
+				{
+					clawSol->Set(DoubleSolenoid::kReverse);//if returns 0 then open claw
+					clawPosition = false;
+				}
 			}
 			else
 			{

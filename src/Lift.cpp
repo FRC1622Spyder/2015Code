@@ -16,6 +16,9 @@ private:
 		bool manContButton;
 		bool clawPos;
 
+		bool autoStackButton;
+		int autoStackProcedure;//Determine what type of stacking will occur (grab/release)
+
 		double lift1Pos;//Position setting
 		double lift2Pos;
 		double lift3Pos;
@@ -24,6 +27,9 @@ private:
 		double P;
 		double I;
 		double D;
+
+		Spyder::SubsystemMgr *mgr;
+		Spyder::Subsystem *sub;
 
 		//Store current values to determine number of totes
 		/*float toteCurrentOne;
@@ -74,21 +80,22 @@ public:
 		lift2Pos = 20;
 		lift3Pos = -20;
 
-		Spyder::SubsystemMgr * mgr = Spyder::SubsystemMgr::GetSingleton();
+		/*Spyder::SubsystemMgr * mgr = Spyder::SubsystemMgr::GetSingleton();
 		Spyder::Subsystem *sub = mgr->GetSubsystem("Claw");
 		if(sub !=NULL)
 			{
 			Claw *claw = dynamic_cast<Claw*>(sub);
-		//clawPos = claw->isClawClosed();
-			}
+			//clawPos = claw->isClawClosed();
+			}*/
 
 		Spyder::ConfigVar<double> P_Val("P_ValueForLiftPID", 0.5);//Set PID Values
 		Spyder::ConfigVar<double> I_Val("I_ValueForLiftPID", 0);
 		Spyder::ConfigVar<double> D_Val("D_ValueForLiftPID", 0);
-
 		//P = P_Val.GetVal();
 		//I = I_Val.GetVal();
 		//D = D_Val.GetVal();
+
+		autoStackProcedure = 1;//Close claw routine goes first
 
 		Spyder::ConfigVar<int> liftMotorVal ("liftMotorCAN_id", 3);//Configure Lift Motor
 		liftMotor = new CANTalon(liftMotorVal.GetVal());
@@ -169,6 +176,17 @@ public:
 		Spyder::TwoIntConfig manualControlJoy("liftManualControlJoystickVal", 1, 3);//Setting manual control to joystick
 		manControl = Spyder::GetJoystick(manualControlJoy.GetVar(1));
 
+		Spyder::TwoIntConfig autoStack("autoStackButtonVal", 1, 2);
+		autoStackButton = Spyder::GetJoystick(autoStack.GetVar(1))->GetRawButton(autoStack.GetVar(2));
+
+		mgr = Spyder::SubsystemMgr::GetSingleton();
+		sub = mgr->GetSubsystem("Claw");//Look for subsystem 'claw'
+		if(sub !=NULL)//if 'claw' is found, proceed
+		{
+			Claw *claw = dynamic_cast<Claw*>(sub);
+			clawPos = claw->isClawClosed();
+		}
+
 		switch(runmode)
 		{
 		case Spyder::M_AUTO:
@@ -186,6 +204,17 @@ public:
 			 *
 			 * JK, PHILIP U DA BEST
 			 * -K			 *
+			 */
+			/*DEAR O DIVINE CREATOR OF APOS, THE NAVAJO TACO OVERLORD 50000,
+			 * YOUR CODE IS AT BEST AMUSING, AND AT WORST SOMETHING I WOULDN'T
+			 * EVEN SHOW MY INLAWS IF THEY HAPPENED TO BE WIELDING PITCHFORKS AND
+			 * SPINNING ME OVER A FLAME ON A SPIT BECAUSE IT IS JUST THAT
+			 * HORRIFYING. DO NOT TRY MY PATIENCE. YOUR CODE REMINDS ME OF A
+			 * MAN WHO SPENT WEEKS JAMMING A RULER UP HIS ASS TO MATHEMATICALLY
+			 * DETERMINE HIS IQ.
+			 *
+			 * I WILL LET THIS DISCRETION PASS FOR NOW BECAUSE IT AMUSES ME.
+			 * -P
 			 */
 			switch(autoPhase)
 			{
@@ -340,6 +369,27 @@ public:
 			smartDashboard->PutNumber("Lift D Val", D);
 			smartDashboard->PutNumber("LiftSetDistance", setDistance);
 			smartDashboard->PutNumber("liftEncoderPosition", liftMotor->GetEncPosition());
+
+			//autostack routine
+			if(autoStackButton)
+			{
+				liftMotor->SetControlMode(CANSpeedController::kPosition);
+				if(autoStackProcedure%2)
+				{
+					if(clawPos)//true = closed claw
+					{
+						liftMotor->Set(10);//raise arm
+					}
+				}
+				else
+				{
+					if(!clawPos)//true = opened claw
+					{
+						liftMotor->Set(0);//lower arm
+					}
+				}
+			}
+
 
 			/*struct timespec tp;
 			clock_gettime(CLOCK_REALTIME, &tp);
