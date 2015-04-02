@@ -40,7 +40,7 @@ public:
 		closeClawButton = false;
 		autoStackButton = false;
 		autoStackProcedure = 1;
-		Spyder::ConfigVar<uint8_t> solModule("clawSolModuleNumber", 7);
+		Spyder::ConfigVar<uint8_t> solModule("clawSolModuleNumber", 0);
 		Spyder::TwoIntConfig solPorts("clawSolPorts", 0, 1);
 		if(init == 0)
 		{

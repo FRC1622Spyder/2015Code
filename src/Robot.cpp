@@ -8,23 +8,29 @@ class Robot: public IterativeRobot
 {
 private:
 	LiveWindow *lw;
-	CameraServer *cameraServer;
+	//CameraServer *cameraServer;
 	//SmartDashboard *smartDashboard;
-	//Spyder::RGBStrip *ledStrip;
+	Spyder::RGBStrip *ledStrip1, *ledStrip2;
 	unsigned int usPeriodCounter;
 public:
 	void RobotInit()
 	{
-		/*Spyder::ConfigVar<uint32_t> rChannel("redLEDChannel", 10);
-		Spyder::ConfigVar<uint32_t> gChannel("greenLEDChannel", 11);
-		Spyder::ConfigVar<uint32_t> bChannel("blueLEDChannel", 12);
-		ledStrip = new Spyder::RGBStrip(rChannel.GetVal(), gChannel.GetVal(), bChannel.GetVal());*/
+		//uncommented these lines
+		Spyder::ConfigVar<uint32_t> rChannel1("redLEDChannel1", 1);
+		Spyder::ConfigVar<uint32_t> gChannel1("greenLEDChannel1", 2);
+		Spyder::ConfigVar<uint32_t> bChannel1("blueLEDChannel1", 0);
+		Spyder::ConfigVar<uint32_t> rChannel2("redLEDChannel2", 4);
+		Spyder::ConfigVar<uint32_t> gChannel2("greenLEDChannel2", 5);
+		Spyder::ConfigVar<uint32_t> bChannel2("blueLEDChannel2", 3);
+		ledStrip1 = new Spyder::RGBStrip(rChannel1.GetVal(), gChannel1.GetVal(), bChannel1.GetVal());
+		ledStrip2 = new Spyder::RGBStrip(rChannel2.GetVal(), gChannel2.GetVal(), bChannel2.GetVal());
 
-		//ledStrip->SetColor(10, 10, 10);
+		ledStrip1->SetColor(0, 0, 2000);
+		ledStrip2->SetColor(0, 2000, 0);
 
 		lw = LiveWindow::GetInstance();
-		cameraServer = CameraServer::GetInstance();
-		cameraServer->StartAutomaticCapture();
+		//cameraServer = CameraServer::GetInstance(); //camera code
+		//cameraServer->StartAutomaticCapture();
 
 
 		std::fstream file;
@@ -45,6 +51,9 @@ public:
 	void AutonomousInit()
 	{
 		std::vector<Spyder::Subsystem*> subsystems = Spyder::SubsystemMgr::GetSingleton()->GetSubsystems();
+		//while in autonomous, showing yellow lights like the field does
+		ledStrip1->SetColor(2000,1000,0);
+		ledStrip2->SetColor(2000,1000,0);
 		for (size_t i = 0; i < subsystems.size(); i++)
 		{
 			subsystems[i]->Init(Spyder::M_AUTO);
@@ -67,6 +76,26 @@ public:
 	void TeleopInit()
 	{
 		std::vector<Spyder::Subsystem*> subsystems = Spyder::SubsystemMgr::GetSingleton()->GetSubsystems();
+		DriverStation *tds = DriverStation::GetInstance();
+		DriverStation::Alliance tColor = tds->GetAlliance();
+
+		switch( tColor ){
+		case DriverStation::Alliance::kBlue:
+			//We're on the blue alliance
+			ledStrip1->SetColor( 0, 0, 2000);
+			ledStrip2->SetColor( 0, 0, 2000 );
+			break;
+		case DriverStation::Alliance::kRed:
+				//We're on the red alliance
+				ledStrip1->SetColor( 2000, 0, 0 );
+				ledStrip2->SetColor( 2000, 0, 0 );
+				break;
+		default:
+			//We're neither blue nor red. This should never happen, so show green because Poway
+			ledStrip1->SetColor( 0, 2000, 0 );
+			ledStrip2->SetColor( 0, 2000, 0 );
+		}
+
 		for (size_t i = 0; i < subsystems.size(); i++)
 		{
 			subsystems[i]->Init(Spyder::M_TELEOP);

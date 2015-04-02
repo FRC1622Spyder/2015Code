@@ -105,10 +105,10 @@ public:
 	{
 		Spyder::TwoIntConfig rightJoystick("rightJoyBind", 0, 0);
 		Spyder::ConfigVar<uint32_t> yJoystick("yJoyBind",1);
-		Spyder::ConfigVar<uint32_t> zJoystick("twistJoyBind", 3);
-		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 2);
+		Spyder::ConfigVar<uint32_t> zJoystick("twistJoyBind", 2); //to change to secondary joy-stick, change 3 to 2
+		Spyder::TwoIntConfig senseButton("driveTwistSensitivitySetButton",0, 3); //to change to secondary joy-stick, change 2 to 3
 		Spyder::TwoIntConfig twistSenseJoy("twistSensitivitySliderBind", 0, 4);
-		Spyder::TwoIntConfig accelRampJoy("accelRampSliderBind", 0, 2);
+		Spyder::TwoIntConfig accelRampJoy("accelRampSliderBind", 0, 3);//was 2
 
 		driveStick = Spyder::GetJoystick(rightJoystick.GetVar(1));
 		driveStick->SetAxisChannel(Joystick::kTwistAxis, zJoystick.GetVal());
@@ -351,5 +351,6 @@ public:
 };
 
 Drive drive;
+
 
 

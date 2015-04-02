@@ -22,4 +22,7 @@ namespace Spyder
 		void SetB(uint8_t B);
 	};
 }
+
+
+
 #endif /* RGBSTRIP_H_ */
