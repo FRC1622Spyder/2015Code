@@ -52,8 +52,8 @@ public:
 	{
 		std::vector<Spyder::Subsystem*> subsystems = Spyder::SubsystemMgr::GetSingleton()->GetSubsystems();
 		//while in autonomous, showing yellow lights like the field does
-		ledStrip1->SetColor(2000,1000,0);
-		ledStrip2->SetColor(2000,1000,0);
+		ledStrip1->SetColor(255,13,0);
+		ledStrip2->SetColor(255,13,0);
 		for (size_t i = 0; i < subsystems.size(); i++)
 		{
 			subsystems[i]->Init(Spyder::M_AUTO);
