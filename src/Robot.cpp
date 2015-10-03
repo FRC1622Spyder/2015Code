@@ -11,6 +11,9 @@ private:
 	//CameraServer *cameraServer;
 	//SmartDashboard *smartDashboard;
 	Spyder::RGBStrip *ledStrip1, *ledStrip2;
+	DriverStation *tds;
+	DriverStation::Alliance tColor;
+	bool disabled;
 	unsigned int usPeriodCounter;
 public:
 	void RobotInit()
@@ -22,11 +25,21 @@ public:
 		Spyder::ConfigVar<uint32_t> rChannel2("redLEDChannel2", 4);
 		Spyder::ConfigVar<uint32_t> gChannel2("greenLEDChannel2", 5);
 		Spyder::ConfigVar<uint32_t> bChannel2("blueLEDChannel2", 3);
+
 		ledStrip1 = new Spyder::RGBStrip(rChannel1.GetVal(), gChannel1.GetVal(), bChannel1.GetVal());
 		ledStrip2 = new Spyder::RGBStrip(rChannel2.GetVal(), gChannel2.GetVal(), bChannel2.GetVal());
 
-		ledStrip1->SetColor(0, 0, 2000);
-		ledStrip2->SetColor(0, 2000, 0);
+		/*if(tds)
+		{
+			tds->GetInstance();
+			disabled = tds->IsDisabled();
+		}
+		if(disabled)
+		{
+			ledStrip1->SetColor(0, 0, 2000);
+			ledStrip2->SetColor(0, 2000, 0);
+		}*/
+
 
 		lw = LiveWindow::GetInstance();
 		//cameraServer = CameraServer::GetInstance(); //camera code
@@ -76,8 +89,8 @@ public:
 	void TeleopInit()
 	{
 		std::vector<Spyder::Subsystem*> subsystems = Spyder::SubsystemMgr::GetSingleton()->GetSubsystems();
-		DriverStation *tds = DriverStation::GetInstance();
-		DriverStation::Alliance tColor = tds->GetAlliance();
+		tds = DriverStation::GetInstance();
+		tColor = tds->GetAlliance();
 
 		switch( tColor ){
 		case DriverStation::Alliance::kBlue:

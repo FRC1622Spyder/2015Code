@@ -16,10 +16,10 @@ namespace Spyder
 		PWM m_pwmB;
 	public:
 		RGBStrip(uint32_t redChannel, uint32_t greenChannel, uint32_t blueChannel);
-		void SetColor(uint8_t R, uint8_t G, uint8_t B);
-		void SetR(uint8_t R);
-		void SetG(uint8_t G);
-		void SetB(uint8_t B);
+		void SetColor(uint16_t R, uint16_t G, uint16_t B);
+		void SetR(uint16_t R);
+		void SetG(uint16_t G);
+		void SetB(uint16_t B);
 	};
 }
 

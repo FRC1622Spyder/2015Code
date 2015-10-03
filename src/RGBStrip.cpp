@@ -9,7 +9,7 @@ namespace Spyder
 	{
 	}
 
-	void RGBStrip::SetColor(uint8_t R, uint8_t G, uint8_t B)
+	void RGBStrip::SetColor(uint16_t R, uint16_t G, uint16_t B)
 	{
 		/*m_pwmR.SetRaw(R<<8);
 		m_pwmG.SetRaw(G<<8);*/
@@ -18,17 +18,17 @@ namespace Spyder
 		m_pwmG.SetRaw(G);
 	}
 
-	void RGBStrip::SetR(uint8_t R)
+	void RGBStrip::SetR(uint16_t R)
 	{
 		m_pwmR.SetRaw(R);
 	}
 
-	void RGBStrip::SetG(uint8_t G)
+	void RGBStrip::SetG(uint16_t G)
 	{
 		m_pwmR.SetRaw(G);
 	}
 
-	void RGBStrip::SetB(uint8_t B)
+	void RGBStrip::SetB(uint16_t B)
 	{
 		m_pwmR.SetRaw(B);
 	}
