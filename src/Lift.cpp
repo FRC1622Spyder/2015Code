@@ -501,7 +501,7 @@ public:
 			}
 
 			//Establish number of totes with current draw
-			/*if(liftCurrent <= toteCurrentOne)//totes = 0
+			/* if(liftCurrent <= toteCurrentOne) //totes = 0
 			{
 				//Set new PID values
 			}
